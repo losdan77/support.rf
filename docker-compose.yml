@@ -1,0 +1,41 @@
+version: '3.7'
+services:
+  db: 
+    image: postgres:15
+    container_name: support_db
+    env_file:
+      - .env-non-dev
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    ports:
+      - 9011:5432
+
+  redis:
+    image: redis:7
+    container_name: support_redis
+
+  app:
+    build:
+      context: .
+    container_name: support_app
+    env_file:
+      - .env-non-dev
+    depends_on:
+      - db
+      - redis
+    command: ["/backend/docker/app.sh"]
+    ports:
+      - 9010:8000
+
+  celery:
+    build:
+      context: .
+    container_name: support_celery
+    command: ["/backend/docker/celery.sh"]
+    env_file:
+      - .env-non-dev
+    depends_on:
+      - redis
+
+volumes:
+  postgresdata:
