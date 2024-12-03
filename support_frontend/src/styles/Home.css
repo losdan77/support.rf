@@ -1,0 +1,49 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.homePage {
+    height: 100vh;
+}
+
+.infoText {
+    height: 20vh;
+    text-align: center;
+    font-size: 3vw;
+    align-content: center;
+    background-color: rgb(248, 247, 247);
+}
+
+.choiceDiv {
+    height: 80vh;
+    display: flex;
+    text-decoration: none;
+}
+
+.giveHelp {
+    height: 80vh;
+    width: 50vw;
+    color: black;
+    font-size: 10vh;
+    text-align: center;
+    align-content: center;
+    background-color: rgb(248, 247, 247);
+}
+
+.takeHelp {
+    height: 80vh;
+    width: 50vw;
+    color: black;
+    font-size: 10vh;
+    text-align: center;
+    align-content: center;
+    background-color: rgb(248, 247, 247);
+}
+
+.giveHelp:hover, .takeHelp:hover {
+    background-color: grey;
+    border-bottom: 1vh solid black;
+    transition: 0.4s ease;
+}

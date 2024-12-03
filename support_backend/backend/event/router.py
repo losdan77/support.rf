@@ -39,11 +39,17 @@ async def add_event(event_data: SAddEvent,
 
 @router.get('/get_all_event')
 @cache(expire=60)
-async def get_all_event(need_help: bool,
-                        current_organization: Organization = Depends(get_current_user)):
-    organization = await OrganizationDAO.find_by_id(current_organization['id'])
-    latitude = organization['latitude']
-    longitude = organization['longitude']
+async def get_all_event(need_help: bool):
+    latitude = None
+    longitude = None
+    
+    try:
+        current_organization = get_current_user
+        organization = await OrganizationDAO.find_by_id(current_organization['id'])
+        latitude = organization['latitude']
+        longitude = organization['longitude']
+    except:
+        pass
 
     if not latitude and not longitude:
         all_event = await EventDAO.find_all(need_help = need_help)
