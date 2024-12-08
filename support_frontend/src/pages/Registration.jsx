@@ -1,56 +1,238 @@
 import "../styles/Registration.css"
+import { useState } from "react";
+import axios from "axios";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const Registration = () => {
+    const [regData, setRegData] = useState({
+        email: '', 
+        password: '',
+        password_verify: '',
+        name_organization: '',
+        site_url: '',
+        phone_1: '',
+        phone_2: '',
+        about: '',
+        FIO: '',
+        city: ''
+    }) 
+    const [isOrganization, setIsOrganization] = useState(false);
+    const [cities, setCities] = useState([])
+    const navigate = useNavigate();
+
+    async function registration(e) {
+        e.preventDefault()
+        const email = regData.email
+        const password = regData.password
+        const password_verify = regData.password_verify
+        const name_organization = regData.name_organization
+        const site_url = regData.site_url
+        const phone_1 = regData.phone_1
+        const phone_2 = regData.phone_2
+        const about = regData.about
+        const FIO = regData.FIO
+        const city = regData.city
+        let id_type_organization = null 
+        if (isOrganization) {
+            id_type_organization =  2
+        }
+        else {
+            id_type_organization =  1
+        }
+
+        try {
+            const response = await axios.post("http://localhost:8000/organizations/registr",
+                {
+                    email,
+                    password,
+                    password_verify,
+                    name_organization,
+                    site_url,
+                    phone_1,
+                    phone_2,
+                    about,
+                    FIO,
+                    city,
+                    id_type_organization
+                }
+            )
+            navigate(`/login`);
+        }
+        catch(error) {
+            console.log(error);
+            
+            if (error.status === 409) {
+                alert("Пароли не совпадают");
+            } 
+            if (error.status === 401) {
+                if (error.response.data.detail === "Данный пользовать уже существует") {
+                    alert("Данный пользователь уже существует");
+                }
+                if (error.response.data.detail === "Короткий пароль") {
+                    alert("Слишком короткий пароль, минимум 5 символов");
+                }
+            } 
+            else {
+                alert("Ошибка сервера. Попробуйте позже");
+            }
+        }
+            
+        setRegData({
+            email: '', 
+            password: '',
+            password_verify: '',
+            name_organization: '',
+            site_url: '',
+            phone_1: '',
+            phone_2: '',
+            about: '',
+            FIO: '',
+            city: ''
+        })
+    }
+
+    async function getAllCity() {
+        try {
+            const response = await axios.get("http://localhost:8000/organizations/all_city");
+            setCities(response.data);
+        }
+        catch(error) {        
+            alert("server error");
+        }
+    }
+
+    useEffect(() => {
+        getAllCity();
+    }, []);
+
     return (
         <div className="registrationPage">
             <div className="registrationForm">
             <form className="row g-3">
                 <div className="col-md-12">
-                    <label htmlFor="inputEmail4" className="form-label">Email*</label>
-                    <input type="email" className="form-control" id="inputEmail4"/>
+                    <label htmlFor="inputEmail" className="form-label">Email*</label>
+                    <input 
+                        type="email" 
+                        className="form-control" 
+                        id="inputEmail"
+                        value={regData.email}
+                        onChange={e => setRegData({...regData, email: e.target.value})}
+                    />
                 </div>
                 <div className="col-md-6">
-                    <label htmlFor="inputPassword4" className="form-label">Пароль*</label>
-                    <input type="password" className="form-control" id="inputPassword4"/>
+                    <label htmlFor="inputPassword" className="form-label">Пароль*</label>
+                    <input 
+                        type="password" 
+                        className="form-control" 
+                        id="inputPassword"
+                        value={regData.password}
+                        onChange={e => setRegData({...regData, password: e.target.value})}
+                    />
                 </div>
                 <div className="col-md-6">
-                    <label htmlFor="inputPassword4" className="form-label">Повторите пароль*</label>
-                    <input type="password" className="form-control" id="inputPassword4"/>
+                    <label htmlFor="inputPassword" className="form-label">Повторите пароль*</label>
+                    <input 
+                        type="password" 
+                        className="form-control" 
+                        id="inputPasswordSecond"
+                        value={regData.password_verify}
+                        onChange={e => setRegData({...regData, password_verify: e.target.value})}
+                    />
                 </div>
                 <div className="col-12">
                     <label htmlFor="inputUrl" className="form-label">Веб-сайт</label>
-                    <input type="text" className="form-control" id="inputUrl" placeholder="https://myblog.ru"/>
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        id="inputUrl" 
+                        placeholder="https://myblog.ru"
+                        value={regData.site_url}
+                        onChange={e => setRegData({...regData, site_url: e.target.value})}
+                    />
                 </div>
+                {isOrganization
+                    ?
                 <div className="col-12">
                     <label htmlFor="inputOrganization" className="form-label">Название организации</label>
-                    <input type="text" className="form-control" id="inputOrganization" placeholder="Добродел"/>
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        id="inputOrganization" 
+                        placeholder="Добродел"
+                        value={regData.name_organization}
+                        onChange={e => setRegData({...regData, name_organization: e.target.value})}
+                    />
                 </div>
+                    :
                 <div className="col-12">
                     <label htmlFor="inputFIO" className="form-label">ФИО</label>
-                    <input type="text" className="form-control" id="inputFIO" placeholder="Иванов Иван Иванович"/>
+                    <input 
+                        type="text" 
+                        className="form-control" 
+                        id="inputFIO" 
+                        placeholder="Иванов Иван Иванович"
+                        value={regData.FIO}
+                        onChange={e => setRegData({...regData, FIO: e.target.value})}
+                    />
+                </div>
+                }   
+                <div className="col-md-6">
+                    <label htmlFor="inputPhone" className="form-label">Номер телефона</label>
+                    <input 
+                        type="tel" 
+                        className="form-control" 
+                        id="inputPhone"
+                        value={regData.phone_1}
+                        onChange={e => setRegData({...regData, phone_1: e.target.value})}
+                    />
                 </div>
                 <div className="col-md-6">
-                    <label htmlFor="inputCity" className="form-label">Номер телефона</label>
-                    <input type="text" className="form-control" id="inputCity"/>
-                </div>
+                    <label htmlFor="inputSecondPhone" className="form-label">Дополнительный номер телефона</label>
+                    <input 
+                        type="tel" 
+                        className="form-control" 
+                        id="inputSecondPhone"
+                        value={regData.phone_2}
+                        onChange={e => setRegData({...regData, phone_2: e.target.value})}
+                    />
+                </div>      
                 <div className="col-md-6">
                     <label htmlFor="inputState" className="form-label">Город</label>
-                    <select id="inputState" className="form-select">
-                    <option selected></option>
-                    <option>Москва</option>
-                    <option>Орел</option>
+                    <select 
+                        id="inputState" 
+                        className="form-select"
+                        value={regData.city}
+                        onChange={e => setRegData({...regData, city: e.target.value})}
+                    >
+                    {cities.map((city) => (
+                        <option key={city.id} value={city.city}>{city.city}</option>
+                    ))}
                     </select>
                 </div>
                 <div className="col-12">
                     <div className="form-check">
-                        <input className="form-check-input" type="checkbox" id="gridCheck"/>
+                        <input 
+                            className="form-check-input" 
+                            type="checkbox" 
+                            id="gridCheck"
+                            value={isOrganization}
+                            onChange={() => setIsOrganization(!isOrganization)}
+                        />
                         <label className="form-check-label" htmlFor="gridCheck">
                             Организация
                         </label>
                     </div>
                 </div>
                 <div className="col-12">
-                    <button type="submit" class="btn btn-primary">Зарегестрироваться</button>
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary"
+                        onClick={registration}
+                    >
+                        Зарегестрироваться
+                    </button>
                 </div>
             </form>
             </div>

@@ -48,6 +48,7 @@ admin = Admin(app, engine_nullpool, authentication_backend=authentication_backen
 
 origins = [
     'http://localhost:8000',
+    'http://localhost:3000',
     '*',
 ]
 

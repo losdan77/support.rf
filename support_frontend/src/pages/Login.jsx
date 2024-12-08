@@ -1,15 +1,48 @@
 import React, {useState} from "react";
-import {Link} from "react-router-dom";
-import "../styles/Login.css"
+import {Link, useNavigate} from "react-router-dom";
+import axios from "axios";
+import "../styles/Login.css";
+import Cookies from 'js-cookie';
+import { useAuth } from "../hooks/useAuth";
 
 const Login = () => {
-    const [loginData, setLoginData] = useState({email: '', password: ''})
+    const [loginData, setLoginData] = useState({email: '', password: ''})  
+    const navigate = useNavigate();
+    const { setIsLogin } = useAuth();
+    const { setProfileId } = useAuth(); //
+  
 
-    const showLoginData = (e) => {
+    async function login(e) {
         e.preventDefault()
-        console.log(loginData);
+        const email = loginData.email
+        const password = loginData.password
+
+        try {
+            const response = await axios.post('http://localhost:8000/organizations/login',
+                {email, password}
+            )
+            
+            Cookies.set("support_access_token", response.data);
+            
+            const accessToken = response.data
+            
+            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`)
+            
+            setIsLogin(true);
+            setProfileId(response_me.data.id)
+            navigate(`/profile/${response_me.data.id}`);
+        }
+        catch(error) {        
+            if (error.status === 422) {
+                alert("Неверный email или пароль");
+            } else {
+                alert("Ошибка сервера. Попробуйте позже");
+            }
+        }
+
         setLoginData({email: '', password: ''})
-    }     
+    }
+
 
     return (
         <div className="authPage">
@@ -50,7 +83,7 @@ const Login = () => {
                     <button 
                         type="submit" 
                         className="btn btn-primary"
-                        onClick={showLoginData}
+                        onClick={login}
                     >
                         Войти
                     </button>

@@ -5,7 +5,7 @@ import GiveHelp from '../pages/GiveHelp';
 import TakeHelp from '../pages/TakeHelp';
 import Registration from "../pages/Registration";
 import RecoveryPassword from "../pages/RecoveryPassword";
-
+import Profile from "../pages/Profile"
 
 const AppRouter = () => {
     return (
@@ -16,6 +16,7 @@ const AppRouter = () => {
             <Route exact path="/take_help" element={<TakeHelp/>}/>
             <Route exact path="/recovery_password" element={<RecoveryPassword/>}/>
             <Route exact path="/registration" element={<Registration/>}/>
+            <Route exact path="/profile/:id" element={<Profile/>}/>
         </Routes>  
     );
 };

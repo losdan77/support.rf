@@ -1,3 +1,5 @@
+import time
+import asyncio
 from password_generator import PasswordGenerator
 from fastapi import APIRouter, Response, Depends
 from typing import Optional
@@ -101,7 +103,9 @@ async def logout_organization(response: Response):
 
 
 @router.post('/me')
-async def me_user(current_organization: Organization = Depends(get_current_user)):
+# async def me_user(current_organization: Organization = Depends(get_current_user)):
+async def me_user(access_token: str):
+    current_organization = await get_current_user(access_token)
     return current_organization
 
 
@@ -135,7 +139,10 @@ async def all_city():
 async def get_profile_by_id(profile_id: int):
     profile = await OrganizationDAO.find_by_id(profile_id)
     city_dict = await CityDAO.find_by_id(profile['id_city'])
-    return profile, city_dict
+    profile = dict(profile)
+    city_dict = dict(city_dict)
+    profile['city'] = city_dict['city']
+    return profile
 
 
 @router.put('/edit_profile/{profile_id}')
