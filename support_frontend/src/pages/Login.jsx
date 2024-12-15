@@ -22,7 +22,7 @@ const Login = () => {
                 {email, password}
             )
             
-            Cookies.set("support_access_token", response.data);
+            Cookies.set("support_access_token", response.data, {expires: 1});
             
             const accessToken = response.data
             
@@ -33,7 +33,7 @@ const Login = () => {
             navigate(`/profile/${response_me.data.id}`);
         }
         catch(error) {        
-            if (error.status === 422) {
+            if (error.status === 401) {
                 alert("Неверный email или пароль");
             } else {
                 alert("Ошибка сервера. Попробуйте позже");

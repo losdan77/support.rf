@@ -54,6 +54,15 @@ where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event 
 where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.id = {id}"""
             result = await session.execute(text(query))
             return result.mappings().one() 
+        
+    @classmethod
+    async def find_event_by_id_organization(cls, id_organization: int):
+        async with async_session_maker() as session:
+            query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo
+            from event as e, city as c, type_event as te, organization as o
+where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.id_organization = {id_organization}"""
+            result = await session.execute(text(query))
+            return result.mappings().all() 
 
     @classmethod
     async def find_all_with_distance(cls,

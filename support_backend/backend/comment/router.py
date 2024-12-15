@@ -12,8 +12,8 @@ router = APIRouter(
 )
 
 @router.post('/add_comment')
-async def add_comment(comment_data: SComment,
-                      current_organization: Organization = Depends(get_current_user)):
+async def add_comment(comment_data: SComment):
+    current_organization = await get_current_user(comment_data.access_token)
     await CommentDAO.add(mark = comment_data.mark,
                          text = comment_data.text,
                          id_from = current_organization['id'],
@@ -22,20 +22,19 @@ async def add_comment(comment_data: SComment,
 
 @router.delete('/delete_comment_by_id')
 async def delete_comment_by_id(id_comment: int,
-                               current_organization: Organization = Depends(get_current_user)):
+                               access_token: str):
+    current_organization = await get_current_user(access_token)
     await CommentDAO.delete_by_id(id_comment,
                                   current_organization['id'])
 
 
 @router.get('/get_comments_by_id_organization')
-@cache(expire=60)
 async def get_commnts_by_id_organization(id_organization: int):
     comments = await CommentDAO.find_all(id_organization)
     return comments
 
 
 @router.get('/get_avg_and_count_mark')
-@cache(expire=60)
 async def get_avg_and_count_mark(id_organization: int):
     avg_and_count_mark = await CommentDAO.select_count_and_avg_mark(id_organization)
     return avg_and_count_mark

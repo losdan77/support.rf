@@ -58,7 +58,9 @@ const Registration = () => {
                     id_type_organization
                 }
             )
-            navigate(`/login`);
+            if (response.status === 200) {
+                navigate(`/login`);
+            }
         }
         catch(error) {
             console.log(error);

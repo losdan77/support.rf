@@ -16,14 +16,14 @@ class CommentDAO(BaseDAO):
     @classmethod
     async def select_count_and_avg_mark(cls, id_organization: int):
         async with async_session_maker() as session:
-            query = f'select avg(mark), count(mark) from "comment" where id_for = {id_organization} group by id_for'
+            query = f'select round(avg(mark), 2) as avg_mark, count(mark) as count_mark from "comment" where id_for = {id_organization} group by id_for'
             result = await session.execute(text(query))
-            return result.mappings().all()
+            return result.mappings().one_or_none()
         
     @classmethod
     async def find_all(cls, id_for: int):
         async with async_session_maker() as session:
             query = f"""select c.*, o.name_organization, o."FIO", o.photo_url from comment as c, organization as o 
-where c.id_from=o.id and id_for = {id_for}"""
+where c.id_from=o.id and id_for = {id_for} order by c.id DESC"""
             result = await session.execute(text(query))
             return result.mappings().all()  

@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Response, Depends
 from typing import Optional
 from fastapi_cache.decorator import cache
@@ -63,7 +64,7 @@ async def get_all_event(need_help: bool):
 @router.get('/get_event_by_id_organization')
 @cache(expire=60)
 async def get_event_by_id_organization(id_organization: int):
-    events = await EventDAO.find_all(id_organization = id_organization)
+    events = await EventDAO.find_event_by_id_organization(id_organization = id_organization)
     return events
 
 
@@ -119,12 +120,16 @@ async def all_theme_event():
 
 @router.get('/find_event_by_text_or_short_text')
 async def find_event_by_text_or_short_text(need_help: bool,
-                                           text: Optional[str] = '',
-                                           current_organization: Organization = Depends(get_current_user)):
-    
-    organization = await OrganizationDAO.find_by_id(current_organization['id'])
-    latitude = organization['latitude']
-    longitude = organization['longitude']
+                                           access_token: str | None = None,
+                                           text: Optional[str] = '',):
+    latitude = None
+    longitude = None
+
+    if access_token:
+        current_organization = await get_current_user(access_token)
+        organization = await OrganizationDAO.find_by_id(current_organization['id'])
+        latitude = organization['latitude']
+        longitude = organization['longitude']
 
     if not latitude and not longitude:
         events = await EventDAO.find_by_text_or_short_text(need_help, text)

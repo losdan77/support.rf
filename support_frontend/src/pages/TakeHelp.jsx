@@ -1,8 +1,8 @@
+import PageHelp from "../components/PageHelp";
+
 const TakeHelp = () => {
     return (
-        <div>
-            TakeHelp
-        </div>
+        <PageHelp needHelp={false} />
     );
 };
 

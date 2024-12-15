@@ -1,5 +1,4 @@
 import {Link} from "react-router-dom";
-import {useState} from "react";
 import { useEffect } from "react";
 import Cookies from 'js-cookie';
 import { useAuth } from "../hooks/useAuth";
@@ -7,7 +6,7 @@ import axios from "axios";
 
 const Navbar = () => {
     const {isLogin, setIsLogin} = useAuth();
-    const {profileId, setProfileId} = useAuth(); //
+    const {profileId, setProfileId} = useAuth(); 
 
     function logout() {
         Cookies.remove("support_access_token");
@@ -15,8 +14,13 @@ const Navbar = () => {
     }
 
     async function checkMe(accessToken) {
-        const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`)
-        setProfileId(response_me.data.id);
+        try {
+            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`);
+            setProfileId(response_me.data.id);
+        }    
+        catch(error) {
+            alert("Ошибка сервера. Попробуйте позже");
+        }
     }
     
     useEffect(() => {
@@ -25,7 +29,7 @@ const Navbar = () => {
             setIsLogin(true); 
             checkMe(accessToken);
         }
-    }, [setIsLogin])
+    }, [setIsLogin, checkMe])
 
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary">

@@ -135,7 +135,6 @@ async def all_city():
 
 
 @router.get('/profile/{profile_id}')
-@cache(expire=60)
 async def get_profile_by_id(profile_id: int):
     profile = await OrganizationDAO.find_by_id(profile_id)
     city_dict = await CityDAO.find_by_id(profile['id_city'])
@@ -146,12 +145,11 @@ async def get_profile_by_id(profile_id: int):
 
 
 @router.put('/edit_profile/{profile_id}')
-async def edit_profile_bu_id(organization_data: SOrganizationEdit,
-                             current_organization: Organization = Depends(get_current_user)):
-    
+async def edit_profile_bu_id(organization_data: SOrganizationEdit):
+    current_organization = await get_current_user(organization_data.access_token)
+
     if organization_data.city:
         id_city = await CityDAO.find_id(city=organization_data.city)
-
     # id_organization = int(current_organization['id'])
 
     await OrganizationDAO.update_by_id(current_organization['id'],  

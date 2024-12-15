@@ -1,9 +1,14 @@
+import { Link } from "react-router-dom";
+
 const EventItem = (props) => {
     return(
+        <Link to={`/event/${props.event.id}`} style={{ textDecoration: "none" }} className="link-opacity-10-hover">
         <div className="card mb-3" style={{maxWidth: '90vw'}}>
             <div className="row g-0">
                 <div className="col-md-4">
-                <img src={props.event.photo_url} className="img-fluid rounded-start" alt="..."/>
+                {props.event.photo_url ?
+                <img src={props.event.photo_url} className="img-fluid rounded-start" alt="..."/> : <p>Фото</p>
+                }
                 </div>
                 <div className="col-md-8">
                 <div className="card-body">
@@ -29,6 +34,7 @@ const EventItem = (props) => {
                 </div>
             </div>
         </div>
+        </Link>
     )
 }
 

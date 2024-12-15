@@ -12,7 +12,7 @@ const RecoveryPassword = () => {
         const email = emailData
 
         try {
-            const response = await axios.post(`http://localhost:8000/organizations/dont_remember_password?email=${email}`)
+            await axios.post(`http://localhost:8000/organizations/dont_remember_password?email=${email}`)
             navigate("/login")
         }
         catch(error) {

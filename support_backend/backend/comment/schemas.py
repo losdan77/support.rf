@@ -5,4 +5,5 @@ class SComment(BaseModel):
     mark: int
     text: Optional[str] = None
     id_for: int
+    access_token: str
     

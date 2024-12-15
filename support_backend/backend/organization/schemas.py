@@ -31,3 +31,4 @@ class SOrganizationEdit(BaseModel):
     about: Optional[str] = None
     FIO: Optional[str] = None
     city: Optional[str] = None
+    access_token: str
