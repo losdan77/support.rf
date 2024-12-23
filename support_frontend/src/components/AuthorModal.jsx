@@ -24,7 +24,7 @@ const AuthorModal = ({ visiable, onClose, author }) => {
                             <div>
                             {author.prof_photo 
                                 ?
-                                <img src={author.prof_photo} alt="Фото"/>
+                                <img src={`/images/${author.prof_photo}`} alt="Фото" style={{maxWidth: "20vw"}}/>
                                 : null
                             }
                             </div>

@@ -21,7 +21,7 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.edit-profile-close-button {
+.close-button {
     position: absolute;
     top: 10px;
     right: 10px;

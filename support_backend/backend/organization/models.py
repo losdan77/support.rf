@@ -10,7 +10,7 @@ class Organization(Base):
     hashed_password: Mapped[str_not_null]
     role: Mapped[str_null]
     created_at: Mapped[created_at]
-    photo_url: Mapped[str_null]
+    photo_url: Mapped[str_null] = mapped_column(default='default.jpg')
     name_organization: Mapped[str_null]
     site_url: Mapped[str_null]
     phone_1: Mapped[str_null]
@@ -19,6 +19,7 @@ class Organization(Base):
     FIO: Mapped[str_null]
     latitude: Mapped[str_null]
     longitude: Mapped[str_null]
+    recovery_password_code: Mapped[str_null]
     
     
     id_city: Mapped[int] = mapped_column(ForeignKey('city.id'),

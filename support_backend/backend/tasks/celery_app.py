@@ -3,6 +3,6 @@ from backend.config import settings
 
 celery = Celery(
     'tasks',
-    broker=f'redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}',
+    broker=settings.RABBITMQ_URL,
     include=['backend.tasks.tasks'],
 )

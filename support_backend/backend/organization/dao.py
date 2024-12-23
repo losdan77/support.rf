@@ -9,10 +9,14 @@ class OrganizationDAO(BaseDAO):
     @classmethod
     async def find_by_name_or_fio(cls, name_organizations: str):
         async with async_session_maker() as session:
-            query = (select(cls.model.__table__.columns)
-                    .filter(or_(cls.model.name_organization.like(f'%{name_organizations}%'),
-                                cls.model.FIO.like(f'%{name_organizations}%'),)))
-            result = await session.execute(query)
+            query = f"""
+                    select o.*, count(c.id) from organization o
+                    left join comment c on c.id_for = o.id
+                    where o.name_organization like '%{name_organizations}%' or o."FIO" like '%{name_organizations}%'
+                    group by o.id
+                    order by count(c.id) DESC;
+                    """
+            result = await session.execute(text(query))
             return result.mappings().all()
         
     @classmethod
@@ -66,7 +70,14 @@ class OrganizationDAO(BaseDAO):
             query = f"""update organization set hashed_password = '{hashed_password}' where id = {id}"""
             await session.execute(text(query))
             await session.commit()
-            
+    
+    @classmethod      
+    async def update_code_by_id(cls, id: int, recovery_password_code: str):
+        async with async_session_maker() as session:
+            query = f"""update organization set recovery_password_code = '{recovery_password_code}' where id = {id}"""
+            await session.execute(text(query))
+            await session.commit()
+
 
 class CityDAO(BaseDAO):
     model = City

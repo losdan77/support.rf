@@ -17,9 +17,8 @@ router = APIRouter(
 )
 
 @router.post('/add_event')
-async def add_event(event_data: SAddEvent,
-                    current_organization: Organization = Depends(get_current_user)):
-
+async def add_event(event_data: SAddEvent):
+    current_organization = await get_current_user(event_data.access_token)
     if event_data.city:
         id_city = await CityDAO.find_id(city=event_data.city)
     else: 
@@ -36,6 +35,8 @@ async def add_event(event_data: SAddEvent,
                        id_type_event = id_type_event['id'],
                        latitude = event_data.latitude,
                        longitude = event_data.longitude)
+    
+    return 'ok'
 
 
 @router.get('/get_all_event')

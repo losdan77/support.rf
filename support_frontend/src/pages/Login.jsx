@@ -1,15 +1,15 @@
-import React, {useState} from "react";
+import React, {useContext, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
 import axios from "axios";
 import "../styles/Login.css";
 import Cookies from 'js-cookie';
-import { useAuth } from "../hooks/useAuth";
+//import { useAuth } from "../hooks/useAuth";
+import { AuthContext } from "../context";
 
 const Login = () => {
     const [loginData, setLoginData] = useState({email: '', password: ''})  
     const navigate = useNavigate();
-    const { setIsLogin } = useAuth();
-    const { setProfileId } = useAuth(); //
+    const { setIsLogin, setProfileId, setAccessToken } = useContext(AuthContext);
   
 
     async function login(e) {
@@ -24,12 +24,13 @@ const Login = () => {
             
             Cookies.set("support_access_token", response.data, {expires: 1});
             
-            const accessToken = response.data
+            const accessToken = response.data;
             
-            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`)
+            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`);
             
             setIsLogin(true);
-            setProfileId(response_me.data.id)
+            setProfileId(response_me.data.id);
+            setAccessToken(accessToken);
             navigate(`/profile/${response_me.data.id}`);
         }
         catch(error) {        
@@ -40,7 +41,7 @@ const Login = () => {
             }
         }
 
-        setLoginData({email: '', password: ''})
+        setLoginData({email: '', password: ''});
     }
 
 
@@ -76,7 +77,7 @@ const Login = () => {
                         </Link>
                     </div>
                     <div className="mb-3 form-check">
-                        <Link to="/recovery_password" style={{ textDecoration: 'none' }}>
+                        <Link to="/dont_remember_password" style={{ textDecoration: 'none' }}>
                             <p className="link-dark">Забыли пароль?</p>
                         </Link>
                     </div>

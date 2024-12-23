@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import "../styles/EditProfileModal.css"
 
 const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
+    const [successChangeProfileAlert, setSuccessChangeProfileAlert] = useState(false); 
     const [cities, setCities] = useState([]);
     const [formData, setFormData] = useState({
         FIO: profileInfo.FIO || "",
@@ -42,9 +43,12 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
                 }
             )
             if (response.status === 200) {
-                onClose();
+                setSuccessChangeProfileAlert(true);
+                setTimeout(() => {
+                    setSuccessChangeProfileAlert(false);
+                    onClose();
+                }, 1000);
             }
-            
         }
         catch(error) {
             alert("Ошибка сервера");
@@ -54,7 +58,6 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
 
     useEffect(() => {
         getAllCity();
-        //console.log(formData);
     }, [profileInfo])
 
     if (!visiable) return null;
@@ -160,6 +163,13 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
                             Сохранить
                         </button>
                     </div>
+                    { successChangeProfileAlert 
+                        ?
+                    <div className="alert alert-success" role="alert">
+                        Профиль успешно изменен!
+                    </div>
+                        : null
+                    }
                 </form>
             </div>
         </div>

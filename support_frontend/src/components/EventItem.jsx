@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
 
-const EventItem = (props) => {
+const EventItem = (props) => {    
     return(
         <Link to={`/event/${props.event.id}`} style={{ textDecoration: "none" }} className="link-opacity-10-hover">
         <div className="card mb-3" style={{maxWidth: '90vw'}}>
             <div className="row g-0">
                 <div className="col-md-4">
-                {props.event.photo_url ?
-                <img src={props.event.photo_url} className="img-fluid rounded-start" alt="..."/> : <p>Фото</p>
-                }
+                <img src={`/images/${props.event.photo_url}`} className="img-fluid rounded-start" alt="Фото" />
                 </div>
                 <div className="col-md-8">
                 <div className="card-body">
@@ -29,7 +27,19 @@ const EventItem = (props) => {
                         <p className="card-text">
                             <small className="text-body-secondary">Город: {props.event.city}</small>
                         </p>
-                    </div>    
+                    </div>  
+                    { (props.profileId === props.event.id_organization) 
+                        ? 
+                        <>
+                            <button className="close-button" onClick={() => console.log('edit')} style={{marginRight: "2vw"}}> 
+                                &#x270E;                                                                                                      {/* Доделать тему */}
+                            </button> 
+                            <button className="close-button" onClick={() => console.log('delete')}>
+                                &#128465;
+                            </button> 
+                        </>
+                        : null
+                    }  
                 </div>
                 </div>
             </div>

@@ -47,8 +47,8 @@ def send_new_password_on_email(email: str,
     msg_content = new_password
 
     msg = EmailMessage()
-    msg.set_content(f'Ваш новый пароль: {msg_content}', charset='utf-8')
-    msg['Subject'] = 'Новый пароль'
+    msg.set_content(f'Ваш код для восстановления пароля: {msg_content}', charset='utf-8')
+    msg['Subject'] = 'Новый код'
     msg['From'] = settings.SMTP_USER
     msg['To'] = email
 

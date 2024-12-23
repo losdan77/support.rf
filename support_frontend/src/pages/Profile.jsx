@@ -1,28 +1,29 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/Profile.css"
 import { useParams } from "react-router-dom";
 import { useFetching } from "../hooks/useFetching";
 import AdditionalProfileInformation from "../components/AdditionalProfileInformation";
-import { useAuth } from "../hooks/useAuth";
-import Cookies from 'js-cookie';
 import Spiner from "../components/Spiner";
 import EditProfileModal from "../components/EditProfileModal";
+import ChangePasswordModal from "../components/ChangePasswordModal";
+import CreateEventModal from "../components/CreateEventModal";
+import { AuthContext } from "../context";
 
 
 const Profile = () => {
-    const {isLogin, setIsLogin} = useAuth();
-    const {profileId, setProfileId} = useAuth(); 
+    const {isLogin, setIsLogin, profileId, setProfileId, accessToken, setAccessToken } = useContext(AuthContext)
     const [isAdmin, setIsAdmin] = useState(false);
-    const [accessToken, setAccessToken] = useState('');
     const params = useParams();
     const [profileInfo, setProfileInfo] = useState({}); 
     const [fetchProfileById, isLoading, error] = useFetching( async () => {
         const response = await getProfileInfo(params.id);   
-        setProfileInfo(response.data);     
+        setProfileInfo(response.data);             
     })
     const [eventButtonVisible, setEventButtonVisible] = useState(true);
-    const [visiableModal, setVisiableModal] = useState(false);
+    const [visiableEditModal, setVisiableEditModal] = useState(false);
+    const [visiableChangeModal, setVisiableChangeModal] = useState(false);
+    const [visiableCreateModal, setVisiableCreateModal] = useState(false);
 
     async function getProfileInfo(id) {
         const response = await axios.get(`http://localhost:8000/organizations/profile/${id}`)
@@ -30,12 +31,6 @@ const Profile = () => {
     }    
 
     function checkIsAdmin() {
-        console.log(params.id);
-        console.log(profileId);
-        console.log(params.id == profileId);
-        
-        
-        
         if (params.id == profileId) {
             setIsAdmin(true);
         }
@@ -45,33 +40,11 @@ const Profile = () => {
     }
 
     useEffect(() => {
-        const accessTokenFromCookies = Cookies.get("support_access_token")       
-        if (accessTokenFromCookies) {
-            setAccessToken(accessTokenFromCookies);   
-            checkMe(accessTokenFromCookies);
-        }
         fetchProfileById();
         checkIsAdmin();
-    }, [params, visiableModal, setIsLogin, isLogin, profileId])
+    }, [params, visiableEditModal, visiableChangeModal, setIsLogin, isLogin, profileId])
 
-    async function checkMe(accessToken) {
-        try {
-            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`);
-            setProfileId(response_me.data.id);
-        }    
-        catch(error) {
-            alert("Ошибка сервера. Попробуйте позже");
-        }
-    }
     
-    // useEffect(() => {
-    //     const accessTokenFromCookies = Cookies.get("support_access_token")       
-    //     if (accessTokenFromCookies) {
-    //         setAccessToken(accessTokenFromCookies);   
-    //         checkMe(accessTokenFromCookies);
-    //     }
-    // }, [setIsLogin, isLogin, profileId])
-
     return (
         <div className="profilePage p-5">
             <div className="card mb-3">
@@ -84,7 +57,7 @@ const Profile = () => {
                     :
                 <>
                 {profileInfo.photo_url ?
-                <img src={profileInfo.photo_url} className="card-img-top" alt="..."/> : null
+                <img src={`/images/${profileInfo.photo_url}`} className="card-img-top" alt="..." style={{maxHeight: "20vw"}}/> : null
                 }
                 <div className="card-body">
                   <h5 className="card-title">
@@ -101,19 +74,45 @@ const Profile = () => {
                   <p className="card-text">Город: {profileInfo.city}</p>
                   { isAdmin
                         ?
-                  <button
-                    type="button" 
-                    className="btn btn-primary"
-                    onClick={() => setVisiableModal(true)}
-                  >
-                    Редактировать профиль
-                  </button>
+                    <>
+                    <button
+                      type="button" 
+                      className="btn btn-primary m-2"
+                      onClick={() => setVisiableEditModal(true)}
+                    >
+                      Редактировать профиль
+                    </button>
+                    <button
+                      type="button" 
+                      className="btn btn-primary m-2"
+                      onClick={() => setVisiableChangeModal(true)}
+                    >
+                      Сменить пароль
+                    </button>
+                    <button
+                      type="button" 
+                      className="btn btn-primary m-2"
+                      onClick={() => setVisiableCreateModal(true)}
+                    >
+                      Добавить событие
+                    </button>
+                    </>
                         : null
                   }
                     <EditProfileModal
-                        visiable={visiableModal}
-                        onClose={() => setVisiableModal(false)}
+                        visiable={visiableEditModal}
+                        onClose={() => setVisiableEditModal(false)}
                         profileInfo={profileInfo}
+                        accessToken={accessToken}
+                    />
+                    <ChangePasswordModal
+                        visiable={visiableChangeModal}
+                        onClose={() => setVisiableChangeModal(false)}
+                        accessToken={accessToken}
+                    />
+                    <CreateEventModal
+                        visiable={visiableCreateModal}
+                        onClose={() => setVisiableCreateModal(false)}
                         accessToken={accessToken}
                     />
                   <p className="card-text"><small className="text-body-secondary">Дата регистрации: {profileInfo.created_at}</small></p>
@@ -125,6 +124,7 @@ const Profile = () => {
                 eventButtonVisible={eventButtonVisible}
                 setEventButtonVisible={setEventButtonVisible}
                 accessToken={accessToken}
+                profileId={profileId}
             />
         </div>
     );

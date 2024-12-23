@@ -35,9 +35,7 @@ const PageHelp = () => {
                         :
                     <div>
                         <div className="card mb-3">
-                            {event.photo_url ?
-                            <img src={event.photo_url} className="card-img-top" alt="..."/> : null
-                            }
+                            <img src={`/images/${event.photo_url}`} className="card-img-top" alt="..." style={{maxHeight: "20vh"}}/>
                             <div className="card-body">
                                 <h5 className="card-title">{event.short_text}</h5>
                                 <p className="card-text">{event.text}</p>

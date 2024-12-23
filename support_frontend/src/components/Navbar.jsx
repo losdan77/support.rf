@@ -1,35 +1,15 @@
 import {Link} from "react-router-dom";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import Cookies from 'js-cookie';
-import { useAuth } from "../hooks/useAuth";
-import axios from "axios";
+import { AuthContext } from "../context";
 
 const Navbar = () => {
-    const {isLogin, setIsLogin} = useAuth();
-    const {profileId, setProfileId} = useAuth(); 
+    const {isLogin, setIsLogin, profileId, setProfileId} = useContext(AuthContext);
 
     function logout() {
         Cookies.remove("support_access_token");
         setIsLogin(false);
     }
-
-    async function checkMe(accessToken) {
-        try {
-            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`);
-            setProfileId(response_me.data.id);
-        }    
-        catch(error) {
-            alert("Ошибка сервера. Попробуйте позже");
-        }
-    }
-    
-    useEffect(() => {
-        const accessToken = Cookies.get("support_access_token")        
-        if (accessToken) {
-            setIsLogin(true); 
-            checkMe(accessToken);
-        }
-    }, [setIsLogin, checkMe])
 
     return (
         <nav className="navbar navbar-expand-lg bg-body-tertiary">
@@ -41,6 +21,11 @@ const Navbar = () => {
                     <span className="navbar-toggler-icon"></span>
                 </button>
                 <div className="collapse navbar-collapse" id="navbarNavAltMarkup">
+                    <div className="navbar-nav">
+                        <Link to='/organizations' className="nav-link">
+                            Организации и пользователи &#128269;
+                        </Link>
+                    </div>
                     <div className="navbar-nav">
                         <Link to='/about' className="nav-link">
                             О нас

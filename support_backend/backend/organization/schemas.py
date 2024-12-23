@@ -18,6 +18,7 @@ class SChangePassword(BaseModel):
     old_password: str
     new_password: str
     verify_new_password: str
+    access_token: str
 
 class SOrganizationLogin(BaseModel):
     email: EmailStr
@@ -32,3 +33,8 @@ class SOrganizationEdit(BaseModel):
     FIO: Optional[str] = None
     city: Optional[str] = None
     access_token: str
+
+class SCreateNewPassword(BaseModel):
+    email: str
+    new_password: str
+    verify_new_password: str

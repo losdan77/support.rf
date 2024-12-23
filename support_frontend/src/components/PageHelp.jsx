@@ -63,9 +63,7 @@ const PageHelp = (props) => {
                 {(error | errorFilter)
                     ? <h1 className="errorEvents">Ошибка {error | errorFilter}</h1> :
                     (isLoading | isFilterLoading)
-                        ? 
-                        <Spiner/>
-                        :
+                        ? <Spiner/> :
                         (events.length === 0)
                             ? <h1 className="titleEvents">Событий нет</h1> :
                 <EventList events={events} title='Список событий:'/>

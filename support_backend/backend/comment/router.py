@@ -26,6 +26,7 @@ async def delete_comment_by_id(id_comment: int,
     current_organization = await get_current_user(access_token)
     await CommentDAO.delete_by_id(id_comment,
                                   current_organization['id'])
+    return 'ok'
 
 
 @router.get('/get_comments_by_id_organization')

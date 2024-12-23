@@ -10,3 +10,4 @@ class SAddEvent(BaseModel):
     type_event: str
     latitude: str
     longitude: str
+    access_token: str

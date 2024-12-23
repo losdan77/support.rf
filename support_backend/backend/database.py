@@ -21,4 +21,4 @@ class Base(DeclarativeBase):
 intpk = Annotated[int, mapped_column(primary_key=True)]
 str_not_null = Annotated[str, mapped_column(nullable=False)]
 str_null = Annotated[str, mapped_column(nullable=True)]
-created_at = Annotated[datetime.datetime, mapped_column(server_default=text("TIMEZONE('utc', now())"))]
+created_at = Annotated[datetime.date, mapped_column(server_default=text("TIMEZONE('utc', now())"))]

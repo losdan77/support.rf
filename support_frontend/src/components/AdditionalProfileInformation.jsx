@@ -9,7 +9,7 @@ import AdditionalProfileInformationHeader from "./AdditionalProfileInformationHe
 import Spiner from "./Spiner"
 
 
-const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible, accessToken}) => {
+const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible, accessToken, profileId}) => {
     const [updateComment, setUpdateComment] = useState(false)
     const params = useParams();
     const [events, setEvents] = useState([]);
@@ -29,6 +29,7 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
     })
     const [commentData, setCommentData] = useState({mark: 5, text: ''});
     const [successAddCommentAlert, setSuccessAddCommentAlert] = useState(false); 
+    const [successDelCommentAlert, setSuccessDelCommentAlert] = useState(false); 
 
     async function getProfileEvents() {
         const response = await axios.get(`http://localhost:8000/events/get_event_by_id_organization?id_organization=${params.id}`);
@@ -45,13 +46,12 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
         return response;
     }
 
-    async function addComment(e) { // сделать реактивность
+    async function addComment(e) { 
         e.preventDefault()
         const mark = commentData.mark
         const text = commentData.text
         const id_for = params.id
         const access_token = accessToken
-        
         try {
             const response = await axios.post("http://localhost:8000/comments/add_comment",
                 {mark, text, id_for, access_token}
@@ -68,10 +68,28 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
         }
     }
 
+    async function deleteComment(id_comment) {
+        try {
+            const response = await axios.delete(`http://localhost:8000/comments/delete_comment_by_id?id_comment=${id_comment}&access_token=${accessToken}`)
+            showSuccessDelCommentAlert();
+            setUpdateComment(!updateComment); //
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
+    }
+
     function showSuccessAddCommentAlert() {
         setSuccessAddCommentAlert(true);
         setTimeout(() => {
             setSuccessAddCommentAlert(false);
+        }, 4000);
+    }
+
+    function showSuccessDelCommentAlert() {
+        setSuccessDelCommentAlert(true);
+        setTimeout(() => {
+            setSuccessDelCommentAlert(false);
         }, 4000);
     }
 
@@ -102,7 +120,7 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
                     :
                     (events.length === 0)
                         ? <h1 className="titleEvents">Событий нет</h1> :
-                <EventList events={events} title="Список событий этого пользователя:"/>
+                <EventList events={events} title="Список событий этого пользователя:" profileId={profileId}/>
                 }
             </div>
                 :
@@ -141,13 +159,20 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
                                 className="btn btn-primary"
                                 onClick={addComment}
                             >
-                                Отправить
+                                Добавить
                             </button>
                         </div>
                         { successAddCommentAlert 
                             ?
                         <div className="alert alert-success" role="alert">
                             Коментарий успешно добавлен
+                        </div>
+                            : null
+                        }
+                        { successDelCommentAlert 
+                            ?
+                        <div className="alert alert-success" role="alert">
+                            Коментарий успешно удален
                         </div>
                             : null
                         }
@@ -161,7 +186,7 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
                     :
                     (comments.length === 0)
                         ? <h1 className="titleComments">Комментариев нет</h1> :
-                <CommentList comments={comments} title="Комментарии:" mark={mark}/>
+                <CommentList comments={comments} title="Комментарии:" mark={mark} profileId={profileId} accessToken={accessToken} deleteComment={deleteComment}/> 
                 }
             </div>
             }

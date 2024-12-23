@@ -1,15 +1,15 @@
 import time
 import asyncio
-from password_generator import PasswordGenerator
+import random
 from fastapi import APIRouter, Response, Depends
 from typing import Optional
 from fastapi_cache.decorator import cache
 from pydantic import EmailStr
 from backend.config import settings
 from backend.organization.schemas import SOrganizationLogin, SOrganizationRegister, SOrganizationEdit
-from backend.organization.schemas import SChangePassword
+from backend.organization.schemas import SChangePassword, SCreateNewPassword
 from backend.organization.dao import OrganizationDAO, TypeOrganizationDAO, CityDAO
-from backend.organization.auth import get_password_hash, authenticate_user, create_access_token
+from backend.organization.auth import get_password_hash, authenticate_user, create_access_token, verify_password
 from backend.organization.models import Organization, Type_organization, City
 from backend.organization.dependecies import get_current_user
 from backend.exception import ShortPasswordException, HasExistingUserException, ErrorLoginException
@@ -67,8 +67,8 @@ async def registr_organization(organization_data: SOrganizationRegister):
     return 'ok'
 
 @router.post('/change_password')
-async def change_password(organization_data: SChangePassword,
-                          current_organization: Organization = Depends(get_current_user)):
+async def change_password(organization_data: SChangePassword):
+    current_organization = await get_current_user(organization_data.access_token)
     verify_old_password = await authenticate_user(current_organization['email'],
                                                   organization_data.old_password)
     
@@ -85,6 +85,7 @@ async def change_password(organization_data: SChangePassword,
 
     await OrganizationDAO.update_password_by_id(current_organization['id'],
                                        hashed_password = new_hashed_password)
+    return 'ok'
 
 
 @router.post('/login')
@@ -103,7 +104,6 @@ async def logout_organization(response: Response):
 
 
 @router.post('/me')
-# async def me_user(current_organization: Organization = Depends(get_current_user)):
 async def me_user(access_token: str):
     current_organization = await get_current_user(access_token)
     return current_organization
@@ -173,20 +173,36 @@ async def find_organization_or_person(name_organization: Optional[str] = ''):
 
 @router.post('/dont_remember_password')
 async def dont_remember_password(email: EmailStr):
-    result = await OrganizationDAO.find_one_or_none(email=email)
-    if not result:
+    user = await OrganizationDAO.find_one_or_none(email=email)
+    if not user:
         raise NotEmailRegisterException
+ 
+    new_code = random.randint(100000, 999999)
+
+    new_hashed_code = get_password_hash(str(new_code))
+
+    await OrganizationDAO.update_code_by_id(user['id'],
+                                            recovery_password_code = new_hashed_code)
     
-    pwo = PasswordGenerator()
-    new_password = pwo.generate()
+    send_new_password_on_email.delay(email, new_code)
 
-    new_hashed_password = get_password_hash(new_password)
 
-    await OrganizationDAO.update_password_by_id(result['id'],
-                                       hashed_password = new_hashed_password)
-    
-    send_new_password_on_email.delay(email, new_password)
+@router.post('/verify_singlemode_code_from_mail')
+async def verify_singlemode_code_from_mail(email: EmailStr,
+                                           code: str):
+    user = await OrganizationDAO.find_one_or_none(email=email)
+    return verify_password(code, user['recovery_password_code'])
 
+
+@router.post('/create_new_password')
+async def create_new_password(user_data: SCreateNewPassword):
+    if user_data.new_password != user_data.verify_new_password:
+        raise VerifyPasswordException
+    user = await OrganizationDAO.find_one_or_none(email=user_data.email)
+    hashed_password = get_password_hash(user_data.new_password)
+    user_changed = await OrganizationDAO.update_password_by_id(user['id'],
+                                        hashed_password=hashed_password)
+    return user_changed
 
 @router.post('/update_my_place')
 async def update_my_place(latitude: str,

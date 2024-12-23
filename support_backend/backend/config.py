@@ -36,6 +36,15 @@ class Settings(BaseSettings):
     SMTP_USER: str
     SMTP_PASS: str
 
+    RABBIT_HOST: str
+    RABBIT_PORT: str
+    RABBIT_USER: str
+    RABBIT_PASWORD: str
+
+    @property
+    def RABBITMQ_URL(self):
+        return f'amqp://{self.RABBIT_USER}:{self.RABBIT_PASWORD}@{self.RABBIT_HOST}:{self.RABBIT_PORT}//'
+
     model_config = SettingsConfigDict(env_file=".env")
 
 settings = Settings()

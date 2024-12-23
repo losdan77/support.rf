@@ -20,20 +20,16 @@ const Registration = () => {
     }) 
     const [isOrganization, setIsOrganization] = useState(false);
     const [cities, setCities] = useState([])
+    const [citiesError, setCitiesError] = useState(false)
     const navigate = useNavigate();
 
     async function registration(e) {
         e.preventDefault()
-        const email = regData.email
-        const password = regData.password
-        const password_verify = regData.password_verify
-        const name_organization = regData.name_organization
-        const site_url = regData.site_url
-        const phone_1 = regData.phone_1
-        const phone_2 = regData.phone_2
-        const about = regData.about
-        const FIO = regData.FIO
-        const city = regData.city
+        if (!regData.city) {
+            setCitiesError(true);
+            return;
+        }
+
         let id_type_organization = null 
         if (isOrganization) {
             id_type_organization =  2
@@ -45,16 +41,16 @@ const Registration = () => {
         try {
             const response = await axios.post("http://localhost:8000/organizations/registr",
                 {
-                    email,
-                    password,
-                    password_verify,
-                    name_organization,
-                    site_url,
-                    phone_1,
-                    phone_2,
-                    about,
-                    FIO,
-                    city,
+                    email: regData.email,
+                    password: regData.password,
+                    password_verify: regData.password_verify,
+                    name_organization: regData.name_organization,
+                    site_url: regData.site_url,
+                    phone_1: regData.phone_1,
+                    phone_2: regData.phone_2,
+                    about: regData.about,
+                    FIO: regData.FIO,
+                    city: regData.city,
                     id_type_organization
                 }
             )
@@ -80,19 +76,21 @@ const Registration = () => {
                 alert("Ошибка сервера. Попробуйте позже");
             }
         }
-            
-        setRegData({
-            email: '', 
-            password: '',
-            password_verify: '',
-            name_organization: '',
-            site_url: '',
-            phone_1: '',
-            phone_2: '',
-            about: '',
-            FIO: '',
-            city: ''
-        })
+        finally {
+            setRegData({
+                email: '', 
+                password: '',
+                password_verify: '',
+                name_organization: '',
+                site_url: '',
+                phone_1: '',
+                phone_2: '',
+                about: '',
+                FIO: '',
+                city: ''
+            })
+            setCitiesError(false);
+        }
     }
 
     async function getAllCity() {
@@ -208,10 +206,12 @@ const Registration = () => {
                         value={regData.city}
                         onChange={e => setRegData({...regData, city: e.target.value})}
                     >
+                        <option value="">Выберите город</option>
                     {cities.map((city) => (
                         <option key={city.id} value={city.city}>{city.city}</option>
                     ))}
                     </select>
+                    {citiesError ? <p className="text-danger">Пожалуйста, выберите город</p> : null}
                 </div>
                 <div className="col-12">
                     <div className="form-check">
