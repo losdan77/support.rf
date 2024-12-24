@@ -10,7 +10,7 @@ class Event(Base):
     created_at: Mapped[created_at]
     text: Mapped[str_not_null]
     short_text: Mapped[str_not_null]
-    photo_url: Mapped[str_null] = mapped_column(default='default.jpg')
+    photo_url: Mapped[str_null] = mapped_column(default='/images/default.jpg')
     people_count: Mapped[int] = mapped_column(nullable=True)
     latitude: Mapped[str_not_null]
     longitude: Mapped[str_not_null]

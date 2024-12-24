@@ -1,4 +1,5 @@
 import shutil
+import time
 from fastapi import APIRouter, UploadFile, Depends
 from backend.config import settings
 from backend.exception import NoPermitException
@@ -16,7 +17,8 @@ router = APIRouter(
 @router.post('/add_profile_image')
 async def add_profile_photo(id_profile: int,
                             file: UploadFile,
-                            current_organization: Organization = Depends(get_current_user)):
+                            access_token: str):
+    current_organization = await get_current_user(access_token)
     file_path = f'backend/static/images/{id_profile}_profile.webp'
     with open(file_path, 'wb+') as file_object:
         shutil.copyfileobj(file.file, file_object)  
@@ -26,8 +28,8 @@ async def add_profile_photo(id_profile: int,
 @router.post('/add_event_image')
 async def add_event_photo(id_event: int,
                           file: UploadFile,
-                          current_organization: Organization = Depends(get_current_user)):
-
+                          access_token: str):
+    current_organization = await get_current_user(access_token)
     file_path = f'backend/static/images/{id_event}_event.webp'
     with open(file_path, 'wb+') as file_object:
         shutil.copyfileobj(file.file, file_object)  
@@ -37,8 +39,8 @@ async def add_event_photo(id_event: int,
 @router.post('/add_profile_image_to_s3')
 async def add_profile_image_to_s3(id_profile: int,
                                   file: UploadFile,
-                                  current_organization: Organization = Depends(get_current_user)):
-    
+                                  access_token: str):
+    current_organization = await get_current_user(access_token)
     if id_profile != current_organization['id']:
         raise NoPermitException
 
@@ -46,21 +48,23 @@ async def add_profile_image_to_s3(id_profile: int,
     with open(file_path, 'wb+') as file_object:
         shutil.copyfileobj(file.file, file_object)
 
-    file_url = f'https://storage.yandexcloud.net/{settings.BACKET_NAME}/{id_profile}_profile.jpg'
+    unique_argument = time.time()
+
+    file_url = f'https://storage.yandexcloud.net/{settings.BACKET_NAME}/{id_profile}_profile_{unique_argument}.jpg'
     await OrganizationDAO.add_photo_url(id_profile, file_url)
 
-    upload_profile_image.delay(file_path, id_profile)
+    upload_profile_image.delay(file_path, id_profile, unique_argument)
     
 
 @router.post('/add_event_image_to_s3')
 async def add_profile_image_to_s3(id_event: int,
                                   file: UploadFile,
-                                  current_organization: Organization = Depends(get_current_user)):
-    
+                                  access_token: str):
+    current_organization = await get_current_user(access_token)
     id_organization = await EventDAO.find_by_id(id_event)
     if id_organization['id_organization'] != current_organization['id']:
         raise NoPermitException
-    
+
     file_path = f'backend/static/images/{id_event}_event.jpg'
     with open(file_path, 'wb+') as file_object:
         shutil.copyfileobj(file.file, file_object)

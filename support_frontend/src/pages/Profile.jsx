@@ -24,11 +24,39 @@ const Profile = () => {
     const [visiableEditModal, setVisiableEditModal] = useState(false);
     const [visiableChangeModal, setVisiableChangeModal] = useState(false);
     const [visiableCreateModal, setVisiableCreateModal] = useState(false);
+    const [file, setFile] = useState(null);
+    const [updateFile, setUpdateFile] = useState(false);
 
     async function getProfileInfo(id) {
-        const response = await axios.get(`http://localhost:8000/organizations/profile/${id}`)
+      try {
+        const response = await axios.get(`http://localhost:8000/organizations/profile/${id}`);
         return response;
+      }
+      catch(error) {
+        alert('Ошибка сервера');
+      }
     }    
+
+    async function uploadProfileImage(e) {
+      e.preventDefault();
+      try {
+        const response = await axios.post(`http://localhost:8000/images/add_profile_image_to_s3?id_profile=${profileId}&access_token=${accessToken}`,
+          {file},
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        setUpdateFile(!updateFile);
+      }
+      catch(error) {
+        alert("Ошибка сервера");
+      }
+      finally {
+        setFile(null);
+      }
+    }
 
     function checkIsAdmin() {
         if (params.id == profileId) {
@@ -43,8 +71,15 @@ const Profile = () => {
         fetchProfileById();
         checkIsAdmin();
     }, [params, visiableEditModal, visiableChangeModal, setIsLogin, isLogin, profileId])
-
     
+    useEffect(() => {
+      if (updateFile) {
+        setTimeout(() => {
+          fetchProfileById();
+        }, 4000);
+      }
+    }, [updateFile])
+
     return (
         <div className="profilePage p-5">
             <div className="card mb-3">
@@ -57,7 +92,30 @@ const Profile = () => {
                     :
                 <>
                 {profileInfo.photo_url ?
-                <img src={`/images/${profileInfo.photo_url}`} className="card-img-top" alt="..." style={{maxHeight: "20vw"}}/> : null
+                <img src={`${profileInfo.photo_url}`} className="card-img-top" alt="Фото" style={{maxHeight: "20vw"}}/> : null
+                }
+                { isAdmin 
+                  ?
+                  <form>
+                    <div className="input-group">
+                      <input 
+                        type="file" 
+                        className="form-control" 
+                        id="inputGroupFile04" 
+                        aria-describedby="inputGroupFileAddon04" 
+                        aria-label="Upload"
+                        onChange={e => setFile(e.target.files[0])}
+                      />
+                      <button 
+                        className="btn btn-outline-secondary" 
+                        type="button" 
+                        id="inputGroupFileAddon04"
+                        onClick={uploadProfileImage}
+                      >
+                        Загрузить фото
+                      </button>
+                    </div>
+                  </form> : null
                 }
                 <div className="card-body">
                   <h5 className="card-title">

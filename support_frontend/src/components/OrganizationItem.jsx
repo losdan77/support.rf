@@ -7,7 +7,7 @@ const OrganizationItem = (props) => {
                 <div className="row g-0">
                     <div className="col-md-4">
                         <img 
-                            src={`/images/${props.organization.photo_url}`}
+                            src={`${props.organization.photo_url}`}
                             className="img-fluid rounded-start" 
                             alt="Фото"
                             style={{maxHeight: '9vh'}} //

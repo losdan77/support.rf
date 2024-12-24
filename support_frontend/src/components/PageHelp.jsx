@@ -39,7 +39,7 @@ const PageHelp = (props) => {
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(() => {
-                fetchFilterEvents(filter);
+            fetchFilterEvents(filter);
         }, 500);
 
         return () => clearTimeout(delayDebounceFn); // eslint-disable-next-line

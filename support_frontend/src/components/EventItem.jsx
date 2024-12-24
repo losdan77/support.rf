@@ -6,7 +6,7 @@ const EventItem = (props) => {
         <div className="card mb-3" style={{maxWidth: '90vw'}}>
             <div className="row g-0">
                 <div className="col-md-4">
-                <img src={`/images/${props.event.photo_url}`} className="img-fluid rounded-start" alt="Фото" />
+                <img src={`${props.event.photo_url}`} className="img-fluid rounded-start" alt="Фото" />
                 </div>
                 <div className="col-md-8">
                 <div className="card-body">

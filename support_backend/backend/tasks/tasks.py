@@ -1,5 +1,7 @@
 #celery -A backend.tasks.celery_app:celery worker --loglevel=INFO
 import boto3
+import os
+from botocore.exceptions import BotoCoreError, ClientError
 import smtplib
 from email.message import EmailMessage
 from backend.tasks.celery_app import celery
@@ -7,39 +9,50 @@ from backend.config import settings
 
 @celery.task
 def upload_profile_image(file_path: str,
-                         id_profile: int):
-    
-    session = boto3.session.Session()
-    s3 = session.client(
-        service_name='s3',
-        endpoint_url=settings.ENDPOINT_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.REGION_NAME
-    )
+                         id_profile: int,
+                         unique_argument: str):
+    try:
+        session = boto3.session.Session()
+        s3 = session.client(
+            service_name='s3',
+            endpoint_url=settings.ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.REGION_NAME
+        )
 
-    s3.upload_file(file_path, 
-              settings.BACKET_NAME, 
-              f'{id_profile}_profile.jpg')
-    
+        s3.upload_file(
+            file_path, 
+            settings.BACKET_NAME, 
+            f'{id_profile}_profile_{unique_argument}.jpg'
+            )
+    except (BotoCoreError, ClientError) as e:
+        print(e)
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @celery.task
 def upload_event_image(file_path: str,
                        id_event: int):
-    
-    session = boto3.session.Session()
-    s3 = session.client(
-        service_name='s3',
-        endpoint_url=settings.ENDPOINT_URL,
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.REGION_NAME
-    )
+    try:
+        session = boto3.session.Session()
+        s3 = session.client(
+            service_name='s3',
+            endpoint_url=settings.ENDPOINT_URL,
+            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+            region_name=settings.REGION_NAME
+        )
 
-    s3.upload_file(file_path, 
-              settings.BACKET_NAME, 
-              f'{id_event}_event.jpg')
-    
+        s3.upload_file(file_path, 
+                settings.BACKET_NAME, 
+                f'{id_event}_event.jpg')
+    except (BotoCoreError, ClientError) as e:
+        print(e)
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 @celery.task
 def send_new_password_on_email(email: str,
