@@ -25,7 +25,7 @@ jobs:
     - name: Set up SSH
       uses: webfactory/ssh-agent@v0.5.3
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+        ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
     - name: Unlock SSH key
       run: |
         echo "${{ secrets.SSH_KEY_PASSPHRASE }}" | ssh-add -
