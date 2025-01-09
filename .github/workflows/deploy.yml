@@ -33,6 +33,10 @@ jobs:
     - name: Create .env-non-dev file
       run: echo "${{ secrets.ENV_NON_DEV }}" > ./support_backend/.env-non-dev
 
+    # 3. Создаём файл .env из секретов
+    - name: Create .env file
+      run: echo "${{ secrets.ENV_FRONT }}" > ./support_frontend/.env
+
     # 3. Проверка Docker Compose
     - name: Lint Docker Compose
       run: docker-compose -f docker-compose.yml config
@@ -45,13 +49,13 @@ jobs:
     # 5. Копирование файлов на сервер
     - name: Deploy files to server
       run: |
-        ssh -o StrictHostKeyChecking=no user@176.123.167.12 "mkdir -p ~/app"
-        rsync -avz --exclude=".git" ./ user@176.123.167.12:~/app/
+        ssh -o StrictHostKeyChecking=no los@176.123.167.12 "mkdir -p ~/app"
+        rsync -avz --exclude=".git" ./ los@176.123.167.12:~/app/
 
     # 6. Запуск Docker Compose на сервере
     - name: Restart application
       run: |
-        ssh -o StrictHostKeyChecking=no user@176.123.167.12 << 'EOF'
+        ssh -o StrictHostKeyChecking=no los@176.123.167.12 << 'EOF'
           cd ~/app
           docker-compose down
           docker-compose up -d --build
