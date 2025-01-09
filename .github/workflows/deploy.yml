@@ -29,34 +29,34 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y docker-compose
     
-    # 4. Создаём файл .env-non-dev из секретов
+    # 5. Создаём файл .env-non-dev из секретов
     - name: Create .env-non-dev file
       run: echo "${{ secrets.ENV_NON_DEV }}" > ./support_backend/.env-non-dev
 
-    # 3. Создаём файл .env из секретов
+    # 6. Создаём файл .env из секретов
     - name: Create .env file
       run: echo "${{ secrets.ENV_FRONT }}" > ./support_frontend/.env
 
-    # 3. Проверка Docker Compose
+    # 7. Проверка Docker Compose
     - name: Lint Docker Compose
       run: docker-compose -f docker-compose.yml config
 
-    # 4. Сборка Docker образов
+    # 8. Сборка Docker образов
     - name: Build Docker images
       run: |
         docker-compose -f docker-compose.yml build
 
-    # 5. Копирование файлов на сервер
+    # 9. Копирование файлов на сервер
     - name: Deploy files to server
       run: |
         ssh -o StrictHostKeyChecking=no los@176.123.167.12 "mkdir -p ~/app"
         rsync -avz --exclude=".git" ./ los@176.123.167.12:~/app/
 
-    # 6. Запуск Docker Compose на сервере
+    # 10. Запуск Docker Compose на сервере
     - name: Restart application
       run: |
         ssh -o StrictHostKeyChecking=no los@176.123.167.12 << 'EOF'
           cd ~/app
-          docker-compose down
-          docker-compose up -d --build
+          sudo docker-compose down
+          sudo docker-compose up -d --build
         EOF
