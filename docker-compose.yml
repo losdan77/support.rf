@@ -1,47 +1,80 @@
-version: '3.7'
 services:
   db: 
     image: postgres:15
     container_name: support_db
     env_file:
-      - .env-non-dev
+      - ./support_backend/.env-non-dev
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
     ports:
       - 5432:5432
+    networks:
+      - app_network
 
   redis:
     image: redis:7
     container_name: support_redis
+    ports:
+      - 6379:6379
+    networks:
+    - app_network
 
-  app:
+  backend:
     build:
-      context: .
-    container_name: support_app
+      context: ./support_backend/
+    container_name: support_backend
     env_file:
-      - .env-non-dev
+      - ./support_backend/.env-non-dev
     depends_on:
       - db
       - redis
     command: ["/backend/docker/app.sh"]
     ports:
       - 8000:8000
+    volumes:
+      - shared_data:/backend/backend/static/images
+    networks:
+      - app_network
 
   celery:
     build:
-      context: .
+      context: ./support_backend/
     container_name: support_celery
     command: ["/backend/docker/celery.sh"]
     env_file:
-      - .env-non-dev
+      - ./support_backend/.env-non-dev
     depends_on:
-      - redis
+      - rabbitmq
+    volumes:
+      - shared_data:/backend/backend/static/images
+    networks:
+      - app_network
 
   rabbitmq:
     image: rabbitmq:3-management
+    container_name: support_rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
+    networks:
+      - app_network
+  
+  frontend:
+    build:
+      context: ./support_frontend/
+    container_name: support_frontend
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+    networks:
+      - app_network
 
 volumes:
-  postgresdata:
+  postgres_data:
+  shared_data:
+
+networks:
+  app_network:
+    driver: bridge

@@ -98,7 +98,7 @@ const Registration = () => {
             setCities(response.data);
         }
         catch(error) {        
-            alert("server error");
+            alert("Ошибка сервера");
         }
     }
 
