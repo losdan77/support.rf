@@ -28,6 +28,10 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y docker-compose
+    
+    # 3. Создаём файл .env-non-dev из секретов
+    - name: Create .env-non-dev file
+      run: echo "${{ secrets.ENV_NON_DEV }}" > ./support_backend/.env-non-dev
 
     # 3. Проверка Docker Compose
     - name: Lint Docker Compose

@@ -54,6 +54,8 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: support_rabbitmq
+    env_file:
+      - ./support_backend/.env-non-dev
     ports:
       - 5672:5672
       - 15672:15672
