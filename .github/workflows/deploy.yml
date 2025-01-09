@@ -23,6 +23,12 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
+    # 2. Установим Docker Compose
+    - name: Install Docker Compose
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y docker-compose
+
     # 3. Проверка Docker Compose
     - name: Lint Docker Compose
       run: docker-compose -f docker-compose.yml config
