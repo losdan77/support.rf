@@ -1,5 +1,3 @@
-import time
-import asyncio
 import random
 from fastapi import APIRouter, Response, Depends
 from typing import Optional
@@ -10,7 +8,6 @@ from backend.organization.schemas import SOrganizationLogin, SOrganizationRegist
 from backend.organization.schemas import SChangePassword, SCreateNewPassword
 from backend.organization.dao import OrganizationDAO, TypeOrganizationDAO, CityDAO
 from backend.organization.auth import get_password_hash, authenticate_user, create_access_token, verify_password
-from backend.organization.models import Organization, Type_organization, City
 from backend.organization.dependecies import get_current_user
 from backend.exception import ShortPasswordException, HasExistingUserException, ErrorLoginException
 from backend.exception import VerifyPasswordException, VerifyOldPasswordException, OldAndNewPasswordEqException
@@ -66,6 +63,7 @@ async def registr_organization(organization_data: SOrganizationRegister):
                                   id_type_organization=2)
     return 'ok'
 
+
 @router.post('/change_password')
 async def change_password(organization_data: SChangePassword):
     current_organization = await get_current_user(organization_data.access_token)
@@ -114,9 +112,7 @@ async def add_type_organization(type_organization: str):
     await TypeOrganizationDAO.add(type_organization=type_organization)    
 
 
-
 @router.get('/all_type_organization')
-@cache(expire=60)
 async def all_type_organization():
     all_type = await TypeOrganizationDAO.find_all()
     return all_type
@@ -165,9 +161,20 @@ async def edit_profile_bu_id(organization_data: SOrganizationEdit):
     return update_profile
     
 
+@router.get('/get_organization_count_by_filter')
+async def get_organization_count_by_filter(text: str = ''):
+    count = await OrganizationDAO.get_organization_count_by_filter(text_search=text)
+    return count
+
 @router.get('/find_organization_or_person')
-async def find_organization_or_person(name_organization: Optional[str] = ''):
-    organizations = await OrganizationDAO.find_by_name_or_fio(name_organization)
+async def find_organization_or_person(name_organization: Optional[str] = '',
+                                      limit: int  = 10,
+                                      page: int = 1):
+    offset = (page - 1) * limit
+
+    organizations = await OrganizationDAO.find_by_name_or_fio(name_organizations=name_organization,
+                                                              limit=limit,
+                                                              offset=offset)
     return organizations
 
 
@@ -207,7 +214,8 @@ async def create_new_password(user_data: SCreateNewPassword):
 @router.post('/update_my_place')
 async def update_my_place(latitude: str,
                           longitude: str,
-                          current_user: Organization = Depends(get_current_user)):
+                          access_token: str):
+    current_user = await get_current_user(access_token)
     await OrganizationDAO.update_place_by_id(id = current_user['id'],
                                              latitude = latitude,
                                              longitude = longitude)

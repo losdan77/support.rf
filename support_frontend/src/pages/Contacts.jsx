@@ -4,7 +4,7 @@ import "../styles/Contacts.css"
 const Contacts = () => {
     return(
         <div className="contactsPage">
-            <h1>Контакты</h1>
+            <p className="text-start fs-1">Контакты</p>
             <p className="text-start">
                 Мы всегда открыты для ваших предложений, вопросов и обратной связи!
             </p>
@@ -49,7 +49,7 @@ const Contacts = () => {
                     </div>
                 </div>
             </div>
-            <h1>Адрес офиса:</h1>
+            <p className="text-start fs-1">Адрес офиса:</p>
             <p className="text-start">
                 Москва, ул. Программирования, д. 1, оф. 42
             </p>
@@ -57,7 +57,7 @@ const Contacts = () => {
                 Если у вас есть вопросы о том, как присоединиться к платформе, стать волонтёром или организовать мероприятие, 
                 свяжитесь с нами — мы всегда рады помочь!
             </p>
-            <h1>Работаем вместе ради добра!</h1>
+            <p className="text-start fs-1">Работаем вместе ради добра!</p>
         </div>
     );
 }

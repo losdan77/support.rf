@@ -2,8 +2,15 @@ import { useState } from "react";
 import { useEffect } from "react";
 import axios from "axios";
 import "../styles/CreateEventModal.css"
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
 
 const CreateEventModal = ({visiable, onClose, accessToken}) => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const [successCreateEventAlert, setSuccessCreateEventAlert] = useState(false); 
     const [needHelp, setNeedHelp] = useState(false);
     const [cities, setCities] = useState([]);
@@ -12,6 +19,8 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
     const [idThemeEvent, setIdThemeEvent] = useState(1);
     const [typeEvent, setTypeEvent] = useState([]);
     const [typeEventError, setTypeEventError] = useState(false);
+    const [latitude, setLatitude] = useState('');
+    const [longitude, setLongitude] = useState('');
     const [createData, setCreateData] = useState({
         city: '',
         text: '',
@@ -22,7 +31,7 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
 
     async function getAllCity() {
         try {
-            const response = await axios.get("http://localhost:8000/organizations/all_city");
+            const response = await axios.get(`${API_URL}/organizations/all_city`);
             setCities(response.data);
         }
         catch(error) {        
@@ -32,7 +41,7 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
 
     async function getAllThemeEvent() {
         try {
-            const response = await axios.get("http://localhost:8000/events/all_theme_event");
+            const response = await axios.get(`${API_URL}/events/all_theme_event`);
             setThemeEvent(response.data);
         }
         catch(error) {        
@@ -42,7 +51,7 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
 
     async function getAllTypeEventByTheme() {
         try {
-            const response = await axios.get(`http://localhost:8000/events/all_type_event_by_theme?id_theme_event=${idThemeEvent}`);
+            const response = await axios.get(`${API_URL}/events/all_type_event_by_theme?id_theme_event=${idThemeEvent}`);
             setTypeEvent(response.data);
         }
         catch(error) {        
@@ -61,7 +70,7 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
             return;
         }
         try {
-            const response = await axios.post("http://localhost:8000/events/add_event",
+            const response = await axios.post(`${API_URL}/events/add_event`,
                 {
                     need_help: needHelp,
                     city: createData.city,
@@ -69,8 +78,8 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
                     people_count: createData.peopleCount,
                     short_text: createData.shortText,
                     type_event: createData.selectedTypeEvent,
-                    latitude: '',
-                    longitude: '',
+                    latitude: String(latitude),
+                    longitude: String(longitude),
                     access_token: accessToken
                 }
             )
@@ -108,11 +117,33 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
         getAllTypeEventByTheme();
     }, [idThemeEvent])
 
+    const LocationMarker = () => {
+        useMapEvents({
+            click(e) {
+                setLatitude(e.latlng.lat);
+                setLongitude(e.latlng.lng);
+            },
+        });
+
+        return latitude && longitude ? (
+            <Marker position={[latitude, longitude]} />
+        ) : null;
+    };
+
+    const DefaultIcon = L.icon({
+        iconUrl: markerIcon,
+        shadowUrl: markerShadow,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+      });
+      
+    L.Marker.prototype.options.icon = DefaultIcon;
+
     if (!visiable) return null;
     return(
-        <div className="edit-profile-modal-overlay" onClick={onClose}>
+        <div className="create-event-modal-overlay" onClick={onClose}>
             <div 
-                className="edit-profile-modal-content" 
+                className="create-event-modal-content" 
                 onClick={(e) => e.stopPropagation()} 
             >
                 <button 
@@ -149,7 +180,7 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
                     </div>
                     <div className="col-12">
                         <label htmlFor="inputText" className="form-label">Полный текст (виден на странице события)</label>
-                        <input 
+                        <textarea 
                             type="text" 
                             className="form-control" 
                             id="inputText"
@@ -216,13 +247,26 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
                         {typeEventError ? <p className="text-danger">Пожалуйста, выберите тип события</p> : null}
                     </div>
                     <div className="col-12">
-                        <button 
-                            type="submit" 
-                            className="btn btn-primary"
-                            onClick={createEvent}
+                        <label className="form-label">Выберите место на карте</label>
+                        <MapContainer 
+                            center={[55.75, 37.605]} 
+                            zoom={13}
+                            preferCanvas={true} // Ускоряет рендеринг, используя canvas
+                            zoomAnimation={false} // Отключение анимации зума для повышения производительности
+                            scrollWheelZoom={true} // Включить прокрутку мыши    
                         >
-                            Отправить
-                        </button>
+                            <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                maxZoom={20} // Максимальный зум карты
+                                tileSize={256} // Размер тайлов
+                                updateWhenIdle={true} // Загружать только видимые тайлы
+                                detectRetina={true} // Адаптация для экранов Retina    
+                            />
+                            <LocationMarker />
+                        </MapContainer>
+                        <p>
+                            Координаты: {latitude} {longitude}
+                        </p>
                     </div>
                     { successCreateEventAlert 
                         ?
@@ -231,6 +275,15 @@ const CreateEventModal = ({visiable, onClose, accessToken}) => {
                     </div>
                         : null
                     }
+                    <div className="col-12">
+                        <button 
+                            type="submit" 
+                            className="btn btn-primary"
+                            onClick={createEvent}
+                        >
+                            Отправить
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

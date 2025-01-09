@@ -3,7 +3,7 @@ import EventItem from "./EventItem";
 const EventList = ({events, title, profileId}) => {
     return(
         <div className="Events">
-            <h1 className="titleEvents">{title}</h1>
+            <p className="text-start fs-2 mt-2">{title}</p>
             {events.map(event =>
                 <EventItem event={event} key={event.id} profileId={profileId}/>
             )}

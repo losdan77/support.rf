@@ -6,9 +6,9 @@ services:
     env_file:
       - .env-non-dev
     volumes:
-      - postgresdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
     ports:
-      - 9011:5432
+      - 5432:5432
 
   redis:
     image: redis:7
@@ -25,7 +25,7 @@ services:
       - redis
     command: ["/backend/docker/app.sh"]
     ports:
-      - 9010:8000
+      - 8000:8000
 
   celery:
     build:
@@ -36,6 +36,12 @@ services:
       - .env-non-dev
     depends_on:
       - redis
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - 5672:5672
+      - 15672:15672
 
 volumes:
   postgresdata:

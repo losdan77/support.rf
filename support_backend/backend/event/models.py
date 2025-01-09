@@ -26,7 +26,9 @@ class Event(Base):
     type_event: Mapped[list['Type_event']] = relationship(back_populates='event')
 
     __table_args__ = (
-        Index('short_text_index', 'short_text'),
+        Index('id_organization_index', 'id_organization'),
+        Index('id_city_index', 'id_city'),
+        Index('id_type_event_index', 'id_type_event')
     )
 
     def __str__(self):
@@ -43,10 +45,6 @@ class Type_event(Base):
     
     event: Mapped[list['Event']] = relationship(back_populates='type_event')
     theme_event: Mapped[list['Theme_event']] = relationship(back_populates='type_event')
-    
-    __table_args__ = (
-        Index('type_event_index', 'type_event'),
-    )
 
     def __str__(self):
         return f'{self.type_event}'
@@ -59,10 +57,6 @@ class Theme_event(Base):
     theme_event: Mapped[str_not_null]
 
     type_event: Mapped[list['Type_event']] = relationship(back_populates='theme_event')
-
-    __table_args__ = (
-        Index('theme_event_index', 'theme_event'),
-    )
 
     def __str__(self):
         return f'{self.theme_event}'

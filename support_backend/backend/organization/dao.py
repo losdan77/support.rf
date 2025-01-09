@@ -7,14 +7,15 @@ class OrganizationDAO(BaseDAO):
     model = Organization
 
     @classmethod
-    async def find_by_name_or_fio(cls, name_organizations: str):
+    async def find_by_name_or_fio(cls, name_organizations: str, limit: int, offset: int):
         async with async_session_maker() as session:
             query = f"""
                     select o.*, count(c.id) from organization o
                     left join comment c on c.id_for = o.id
                     where o.name_organization like '%{name_organizations}%' or o."FIO" like '%{name_organizations}%'
                     group by o.id
-                    order by count(c.id) DESC;
+                    order by count(c.id) DESC
+                    offset {offset} limit {limit}
                     """
             result = await session.execute(text(query))
             return result.mappings().all()
@@ -78,6 +79,15 @@ class OrganizationDAO(BaseDAO):
             await session.execute(text(query))
             await session.commit()
 
+    @classmethod
+    async def get_organization_count_by_filter(cls, 
+                                               text_search: str,):
+        async with async_session_maker() as session:
+            query = f"""select count(o.id)
+            from organization o
+            where o.name_organization like '%{text_search}%' or o."FIO" like '%{text_search}%'"""
+            result = await session.execute(text(query))
+            return result.mappings().one()
 
 class CityDAO(BaseDAO):
     model = City

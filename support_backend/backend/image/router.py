@@ -68,11 +68,13 @@ async def add_profile_image_to_s3(id_event: int,
     file_path = f'backend/static/images/{id_event}_event.jpg'
     with open(file_path, 'wb+') as file_object:
         shutil.copyfileobj(file.file, file_object)
+
+    unique_argument = time.time()
     
-    file_url = f'https://storage.yandexcloud.net/{settings.BACKET_NAME}/{id_event}_event.jpg'
+    file_url = f'https://storage.yandexcloud.net/{settings.BACKET_NAME}/{id_event}_event_{unique_argument}.jpg'
     await EventDAO.add_photo_url(id_event, file_url)
 
-    upload_event_image.delay(file_path, id_event)
+    upload_event_image.delay(file_path, id_event, unique_argument)
     
 
 @router.get('get_url_image_profile_from_s3')

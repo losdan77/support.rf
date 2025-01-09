@@ -3,6 +3,7 @@ import axios from "axios";
 import "../styles/ChangePasswordModal.css"
 
 const ChangePasswordModal = ({visiable, onClose, accessToken}) => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const [successChangePasswordAlert, setSuccessChangePasswordAlert] = useState(false); 
     const [formData, setFormData] = useState({
         old_password: "",
@@ -14,7 +15,7 @@ const ChangePasswordModal = ({visiable, onClose, accessToken}) => {
         e.preventDefault()
 
         try {
-            const response = await axios.post("http://localhost:8000/organizations/change_password",
+            const response = await axios.post(`${API_URL}/organizations/change_password`,
                 {
                     old_password: formData.old_password,
                     new_password: formData.new_password,
@@ -55,6 +56,7 @@ const ChangePasswordModal = ({visiable, onClose, accessToken}) => {
     }
 
     if (!visiable) return null;
+    
     return (
         <div className="edit-profile-modal-overlay" onClick={onClose}>
             <div 

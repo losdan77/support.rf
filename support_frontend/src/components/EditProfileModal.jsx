@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import "../styles/EditProfileModal.css"
 
 const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const [successChangeProfileAlert, setSuccessChangeProfileAlert] = useState(false); 
     const [cities, setCities] = useState([]);
     const [formData, setFormData] = useState({
@@ -18,7 +19,7 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
 
     async function getAllCity() {
         try {
-            const response = await axios.get("http://localhost:8000/organizations/all_city");
+            const response = await axios.get(`${API_URL}/organizations/all_city`);
             setCities(response.data);
         }
         catch(error) {        
@@ -30,7 +31,7 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
         e.preventDefault();
 
         try {
-            const response = await axios.put(`http://localhost:8000/organizations/edit_profile/${profileInfo.id}`,
+            const response = await axios.put(`${API_URL}/organizations/edit_profile/${profileInfo.id}`,
                 {
                     name_organization: formData.name_organization,
                     site_url: formData.site_url,
@@ -61,6 +62,7 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
     }, [profileInfo])
 
     if (!visiable) return null;
+    
     return (
         <div className="edit-profile-modal-overlay" onClick={onClose}>
             <div 
@@ -103,7 +105,7 @@ const EditProfileModal = ({visiable, onClose, profileInfo, accessToken}) => {
                     </div>
                     <div className="col-12">
                         <label htmlFor="inputAbout" className="form-label">О себе</label>
-                        <input 
+                        <textarea 
                             type="text" 
                             className="form-control" 
                             id="inputAbout"

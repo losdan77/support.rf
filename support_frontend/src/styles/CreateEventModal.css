@@ -9,6 +9,7 @@
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    /* overflow: hidden; */
 }
 
 .create-event-modal-content {
@@ -17,6 +18,8 @@
     border-radius: 8px;
     max-width: 500px;
     width: 100%;
+    max-height: 90vh; /* Ограничиваем высоту окна */
+    overflow-y: auto; /* Добавляем прокрутку по вертикали */
     position: relative;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
@@ -29,4 +32,13 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
+}
+
+.leaflet-container {
+    height: 300px; 
+    width: 100%; 
+}
+
+.leaflet-control-attribution {
+    display: none !important;
 }

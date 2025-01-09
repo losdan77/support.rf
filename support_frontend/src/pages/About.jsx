@@ -3,7 +3,7 @@ import "../styles/About.css"
 const About = () => {
     return(
         <div className="aboutPage">
-            <h1>О нас</h1>
+            <p className="text-start fs-1">О нас</p>
             <p className="text-start">Добро пожаловать на платформу <strong>Помоги.рф</strong> — место, где волонтёры, 
                 общественные организации и нуждающиеся объединяются для создания лучшего мира.
             </p>
@@ -11,7 +11,7 @@ const About = () => {
                 и теми, кто нуждается в поддержке. Мы верим, что каждый вклад, 
                 даже самый маленький, может изменить чью-то жизнь.
             </p>
-            <h1>Что делает наш проект особенным?</h1>
+            <p className="text-start fs-1">Что делает наш проект особенным?</p>
             <div className="accordion" id="accordionPanelsStayOpenExample">
                 <div className="accordion-item">
                     <h2 className="accordion-header">

@@ -23,6 +23,7 @@ class Comment(Base):
     __table_args__ = (
         CheckConstraint('mark in (1,2,3,4,5)', 'mark_1_2_3_4_5'),
         Index('for_index', 'id_for'),
+        Index('from_index', 'id_from'),
     )
 
     def __str__(self):

@@ -29,9 +29,20 @@ async def delete_comment_by_id(id_comment: int,
     return 'ok'
 
 
+@router.get('/get_comments_count_by_id_organization')
+async def get_comments_count_by_id_organization(id_organization: int):
+    count = await CommentDAO.get_comments_count_by_id_organization(id_for=id_organization)
+    return count
+
+
 @router.get('/get_comments_by_id_organization')
-async def get_commnts_by_id_organization(id_organization: int):
-    comments = await CommentDAO.find_all(id_organization)
+async def get_commnts_by_id_organization(id_organization: int,
+                                         limit: int = 5,
+                                         page: int = 1):
+    offset = (page - 1) * limit
+    comments = await CommentDAO.find_all(id_for=id_organization,
+                                         limit=limit,
+                                         offset=offset)
     return comments
 
 

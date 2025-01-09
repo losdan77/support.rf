@@ -34,7 +34,8 @@ def upload_profile_image(file_path: str,
 
 @celery.task
 def upload_event_image(file_path: str,
-                       id_event: int):
+                       id_event: int,
+                       unique_argument: str):
     try:
         session = boto3.session.Session()
         s3 = session.client(
@@ -47,7 +48,7 @@ def upload_event_image(file_path: str,
 
         s3.upload_file(file_path, 
                 settings.BACKET_NAME, 
-                f'{id_event}_event.jpg')
+                f'{id_event}_event_{unique_argument}.jpg')
     except (BotoCoreError, ClientError) as e:
         print(e)
     finally:
@@ -73,12 +74,13 @@ def send_new_password_on_email(email: str,
 
 @celery.task
 def send_help_email(email: str,
+                    email_from: str,
                     phone_1: str,
                     phone_2: str,
                     short_text: str):
 
     msg = EmailMessage()
-    msg.set_content(f'На ваше событие "{short_text}" откликнулся пользователь {email} {phone_1} {phone_2}', 
+    msg.set_content(f'На ваше событие "{short_text}" откликнулся пользователь {email_from} {phone_1} {phone_2}', 
                     charset='utf-8')
     msg['Subject'] = 'Отклик c Помоги.pф'
     msg['From'] = settings.SMTP_USER

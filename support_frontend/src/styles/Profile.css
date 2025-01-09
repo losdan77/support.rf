@@ -2,3 +2,36 @@
     min-height: 80vh;
     background-color: rgb(248, 247, 247);
 }
+
+.profile-photo-container {
+    position: relative;
+    width: 100%; /* Ширина контейнера */
+    height: 20vh; /* Высота контейнера */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f0f0f0; /* Фон на случай отсутствия фото */
+}
+  
+.profile-photo-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px); /* Размытие для фонового изображения */
+    z-index: 1;
+}
+  
+.profile-photo {
+    position: relative;
+    z-index: 2;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Централизованное отображение без обрезки */
+    object-position: center; /* Центровка изображения */
+}
+    

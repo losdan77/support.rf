@@ -1,49 +1,79 @@
 * {
-    padding: 0;
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
     font-family: Arial, Helvetica, sans-serif;
 }
 
+body {
+    background-color: #f4f4f9;
+}
+
 .homePage {
-    height: 100vh;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: #f8f8f8;
 }
 
 .infoText {
-    height: 20vh;
-    text-align: center;
-    font-size: 3vw;
-    align-content: center;
-    background-color: rgb(248, 247, 247);
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 2rem;
 }
 
 .choiceDiv {
-    height: 80vh;
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.choice {
+    flex: 1 1 calc(45% - 1rem); /* Минимальная ширина 45%, с учетом отступов */
+    max-width: 300px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
     text-decoration: none;
+    color: white;
+    background-color: #6c63ff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 .giveHelp {
-    height: 80vh;
-    width: 50vw;
-    color: black;
-    font-size: 10vh;
-    text-align: center;
-    align-content: center;
-    background-color: rgb(248, 247, 247);
+    background-color: #f44336;
 }
 
 .takeHelp {
-    height: 80vh;
-    width: 50vw;
-    color: black;
-    font-size: 10vh;
-    text-align: center;
-    align-content: center;
-    background-color: rgb(248, 247, 247);
+    background-color: #4caf50;
 }
 
-.giveHelp:hover, .takeHelp:hover {
-    background-color: grey;
-    border-bottom: 1vh solid black;
-    transition: 0.4s ease;
+.choice:hover {
+    transform: translateY(-5px);
+    background-color: #333;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .choice {
+        flex: 1 1 100%; /* На мобильных кнопки будут на всю ширину */
+        max-width: none;
+        height: 100px;
+        font-size: 1.2rem;
+    }
+
+    .infoText {
+        font-size: 1.5rem;
+    }
 }

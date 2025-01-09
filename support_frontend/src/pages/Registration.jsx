@@ -1,11 +1,10 @@
-import "../styles/Registration.css"
-import { useState } from "react";
 import axios from "axios";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
+import "../styles/Registration.css"
 
 const Registration = () => {
+    const API_URL = process.env.REACT_APP_API_URL;   
     const [regData, setRegData] = useState({
         email: '', 
         password: '',
@@ -39,7 +38,7 @@ const Registration = () => {
         }
 
         try {
-            const response = await axios.post("http://localhost:8000/organizations/registr",
+            const response = await axios.post(`${API_URL}/organizations/registr`,
                 {
                     email: regData.email,
                     password: regData.password,
@@ -95,7 +94,7 @@ const Registration = () => {
 
     async function getAllCity() {
         try {
-            const response = await axios.get("http://localhost:8000/organizations/all_city");
+            const response = await axios.get(`${API_URL}/organizations/all_city`);
             setCities(response.data);
         }
         catch(error) {        

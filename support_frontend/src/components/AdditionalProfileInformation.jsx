@@ -1,19 +1,31 @@
-import EventList from "./EventList";
-import { useState } from "react";
 import axios from "axios";
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useFetching } from "../hooks/useFetching";
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
 import CommentList from "./CommentList";
 import AdditionalProfileInformationHeader from "./AdditionalProfileInformationHeader";
 import Spiner from "./Spiner"
-
+import EventList from "./EventList";
+import { getPageCount, getPagesArray } from "../utils/pages";
+import Paginator from "./Paginator";
 
 const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible, accessToken, profileId}) => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const [updateComment, setUpdateComment] = useState(false)
     const params = useParams();
+    
     const [events, setEvents] = useState([]);
+    const [totalEventPages, setTotalEventPages] = useState(0);
+    const [limitEvent, setLimitEvent] = useState(5);
+    const [pageEvent, setPageEvent] = useState(1);
+    let eventPagesArray = getPagesArray(totalEventPages);
+
     const [comments, setComments] = useState([]);
+    const [totalCommentPages, setTotalCommentPages] = useState(0);
+    const [limitComment, setLimitComment] = useState(5);
+    const [pageComment, setPageComment] = useState(1);
+    let commentPagesArray = getPagesArray(totalCommentPages);
+
     const [mark, setMark] = useState({});
     const [fetchProfileEvents, isEventsLoading, eventsEror] = useFetching( async () => { 
         const response = await getProfileEvents();
@@ -32,18 +44,53 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
     const [successDelCommentAlert, setSuccessDelCommentAlert] = useState(false); 
 
     async function getProfileEvents() {
-        const response = await axios.get(`http://localhost:8000/events/get_event_by_id_organization?id_organization=${params.id}`);
-        return response;
+        try {
+            const response = await axios.get(`${API_URL}/events/get_event_by_id_organization?id_organization=${params.id}&limit=${limitEvent}&page=${pageEvent}`);
+            return response;
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
+    }
+
+    async function getEventPages() {
+        try {
+            const response = await axios.get(`${API_URL}/events/get_count_event_by_id_organization?id_organization=${params.id}`);
+            setTotalEventPages(getPageCount(response.data.count, limitEvent));
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
     }
 
     async function getProfileComments() {
-        const response = await axios.get(`http://localhost:8000/comments/get_comments_by_id_organization?id_organization=${params.id}`);
-        return response;
+        try {
+            const response = await axios.get(`${API_URL}/comments/get_comments_by_id_organization?id_organization=${params.id}&limit=${limitComment}&page=${pageComment}`);
+            return response;
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
+    }
+
+    async function getCommentPages() {
+        try {
+            const response = await axios.get(`${API_URL}/comments/get_comments_count_by_id_organization?id_organization=${params.id}`);
+            setTotalCommentPages(getPageCount(response.data.count, limitComment));
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
     }
 
     async function getProfileMark() {
-        const response = await axios.get(`http://localhost:8000/comments/get_avg_and_count_mark?id_organization=${params.id}`);
-        return response;
+        try {
+            const response = await axios.get(`${API_URL}/comments/get_avg_and_count_mark?id_organization=${params.id}`);
+            return response;
+        }
+        catch(error) {
+            alert("Ошибка сервера");
+        }
     }
 
     async function addComment(e) { 
@@ -53,7 +100,7 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
         const id_for = params.id
         const access_token = accessToken
         try {
-            const response = await axios.post("http://localhost:8000/comments/add_comment",
+            const response = await axios.post(`${API_URL}/comments/add_comment`,
                 {mark, text, id_for, access_token}
             );
             showSuccessAddCommentAlert();
@@ -70,7 +117,7 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
 
     async function deleteComment(id_comment) {
         try {
-            const response = await axios.delete(`http://localhost:8000/comments/delete_comment_by_id?id_comment=${id_comment}&access_token=${accessToken}`)
+            const response = await axios.delete(`${API_URL}/comments/delete_comment_by_id?id_comment=${id_comment}&access_token=${accessToken}`)
             showSuccessDelCommentAlert();
             setUpdateComment(!updateComment); //
         }
@@ -94,8 +141,18 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
     }
 
     useEffect( () => {
+        getEventPages();
         fetchProfileEvents(); 
+    }, [pageEvent])
+
+    useEffect( () => {
+        getCommentPages();
         fetchProfileComments();
+    }, [pageComment]) 
+
+    useEffect( () => {
+        fetchProfileEvents(); 
+        //fetchProfileComments();
         fetchProfileMark();
     }, [eventButtonVisible, params])
 
@@ -122,15 +179,16 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
                         ? <h1 className="titleEvents">Событий нет</h1> :
                 <EventList events={events} title="Список событий этого пользователя:" profileId={profileId}/>
                 }
+                <Paginator page={pageEvent} pagesArray={eventPagesArray} totalPages={totalEventPages} setPage={setPageEvent}/>
             </div>
                 :
             <div className="card-body">
                 <form>
-                    <h1 className="titleAddComment">Добавить комментарий:</h1>
+                    <h1 className="text-start fs-2">Добавить комментарий:</h1>
                     <div className="row g-3">
                         <div className="col-md-10">
                             <label htmlFor="inputComment" className="form-label">Комментарий</label>
-                            <input 
+                            <textarea 
                                 type="text" 
                                 className="form-control" 
                                 id="inputComment"
@@ -186,8 +244,9 @@ const AdditionalProfileInformation = ({eventButtonVisible, setEventButtonVisible
                     :
                     (comments.length === 0)
                         ? <h1 className="titleComments">Комментариев нет</h1> :
-                <CommentList comments={comments} title="Комментарии:" mark={mark} profileId={profileId} accessToken={accessToken} deleteComment={deleteComment}/> 
+                <CommentList comments={comments} title="Комментарии:" mark={mark} profileId={profileId} accessToken={accessToken} deleteComment={deleteComment}/>
                 }
+                <Paginator page={pageComment} pagesArray={commentPagesArray} totalPages={totalCommentPages} setPage={setPageComment}/>
             </div>
             }
         </div>

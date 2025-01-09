@@ -1,12 +1,12 @@
+import axios from "axios";
 import React, {useContext, useState} from "react";
 import {Link, useNavigate} from "react-router-dom";
-import axios from "axios";
-import "../styles/Login.css";
 import Cookies from 'js-cookie';
-//import { useAuth } from "../hooks/useAuth";
 import { AuthContext } from "../context";
+import "../styles/Login.css";
 
 const Login = () => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const [loginData, setLoginData] = useState({email: '', password: ''})  
     const navigate = useNavigate();
     const { setIsLogin, setProfileId, setAccessToken } = useContext(AuthContext);
@@ -18,7 +18,7 @@ const Login = () => {
         const password = loginData.password
 
         try {
-            const response = await axios.post('http://localhost:8000/organizations/login',
+            const response = await axios.post(`${API_URL}/organizations/login`,
                 {email, password}
             )
             
@@ -26,7 +26,7 @@ const Login = () => {
             
             const accessToken = response.data;
             
-            const response_me = await axios.post(`http://localhost:8000/organizations/me?access_token=${accessToken}`);
+            const response_me = await axios.post(`${API_URL}/organizations/me?access_token=${accessToken}`);
             
             setIsLogin(true);
             setProfileId(response_me.data.id);

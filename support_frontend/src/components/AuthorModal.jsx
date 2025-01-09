@@ -1,10 +1,11 @@
 import React from "react";
-import "../styles/AuthorModal.css";
 import { Link } from "react-router-dom";
+import "../styles/AuthorModal.css";
+
 
 const AuthorModal = ({ visiable, onClose, author }) => {
     if (!visiable) return null;
-
+    
     return (
         <div className="author-modal-overlay" onClick={onClose}>
             <div 

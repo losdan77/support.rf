@@ -7,14 +7,43 @@ class EventDAO(BaseDAO):
     model = Event
 
     @classmethod
+    async def get_event_count(cls, need_help: bool):
+        async with async_session_maker() as session:
+            query = f"select count(id) from event where need_help is {need_help};"
+            result = await session.execute(text(query))
+            return result.mappings().one()
+        
+    @classmethod
+    async def get_event_count_by_id_organization(cls, id_organization: int):
+        async with async_session_maker() as session:
+            query = f"select count(id) from event where id_organization = {id_organization};"
+            result = await session.execute(text(query))
+            return result.mappings().one()
+
+    @classmethod
+    async def get_event_count_by_filter(cls, 
+                                         need_help: bool,
+                                         text_search: str,):
+        async with async_session_maker() as session:
+            query = f"""select count(e.id)
+            from event as e 
+            where e.need_help is {need_help} 
+            and (e.text like '%{text_search}%' or e.short_text like '%{text_search}%');"""
+            result = await session.execute(text(query))
+            return result.mappings().one()
+        
+    @classmethod
     async def find_by_text_or_short_text(cls, 
                                          need_help: bool,
-                                         text_search: str):
+                                         text_search: str,
+                                         limit: int,
+                                         offset: int):
         async with async_session_maker() as session:
             query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo
             from event as e, city as c, type_event as te, organization as o 
             where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.need_help is {need_help} 
-            and (e.text like '%{text_search}%' or e.short_text like '%{text_search}%')"""
+            and (e.text like '%{text_search}%' or e.short_text like '%{text_search}%') order by e.created_at desc
+            limit {limit} offset {offset}"""
             result = await session.execute(text(query))
             return result.mappings().all()
         
@@ -23,7 +52,9 @@ class EventDAO(BaseDAO):
                                          need_help: bool,
                                          text_search: str,
                                          latitude: str,
-                                         longitude: str):
+                                         longitude: str,
+                                         limit: int,
+                                         offset: int):
         async with async_session_maker() as session:
             query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo,
 (sqrt((COALESCE(NULLIF(e.latitude, '')::float, 0) - {latitude}) * (COALESCE(NULLIF(e.latitude, '')::float, 0) - {latitude}) + 
@@ -33,16 +64,17 @@ join city as c on c.id = e.id_city
 join type_event as te on te.id = e.id_type_event
 join organization as o on o.id = e.id_organization
 where e.need_help is {need_help} and (e.text like '%{text_search}%' or e.short_text like '%{text_search}%')
-order by distance;"""
+order by distance, e.created_at desc limit {limit} offset {offset};"""
             result = await session.execute(text(query))
             return result.mappings().all()
 
     @classmethod
-    async def find_all(cls, need_help: bool):
+    async def find_all(cls, need_help: bool, offset: int, limit: int):
         async with async_session_maker() as session:
             query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo
             from event as e, city as c, type_event as te, organization as o
-where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.need_help is {need_help}"""
+where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.need_help is {need_help} order by e.created_at desc
+limit {limit} offset {offset}"""
             result = await session.execute(text(query))
             return result.mappings().all() 
         
@@ -56,11 +88,15 @@ where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event 
             return result.mappings().one() 
         
     @classmethod
-    async def find_event_by_id_organization(cls, id_organization: int):
+    async def find_event_by_id_organization(cls, 
+                                            id_organization: int,
+                                            limit: int,
+                                            offset: int):
         async with async_session_maker() as session:
             query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo
             from event as e, city as c, type_event as te, organization as o
-where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.id_organization = {id_organization}"""
+where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event and e.id_organization = {id_organization} order by e.created_at desc
+limit {limit} offset {offset}"""
             result = await session.execute(text(query))
             return result.mappings().all() 
 
@@ -68,7 +104,9 @@ where o.id = e.id_organization and c.id = e.id_city and te.id = e.id_type_event 
     async def find_all_with_distance(cls,
                                      need_help: bool,
                                      latitude: str, 
-                                     longitude: str):
+                                     longitude: str,
+                                     limit: int,
+                                     offset: int):
         async with async_session_maker() as session:
             query = f"""select e.*, c.city, te.type_event, o.name_organization, o."FIO", o.email, o.phone_1, o.phone_2, o.photo_url as prof_photo,
 (sqrt((COALESCE(NULLIF(e.latitude, '')::float, 0) - {latitude}) * (COALESCE(NULLIF(e.latitude, '')::float, 0) - {latitude}) + 
@@ -78,7 +116,8 @@ join city as c on c.id = e.id_city
 join type_event as te on te.id = e.id_type_event
 join organization as o on o.id = e.id_organization
 where e.need_help is {need_help}
-order by distance;"""
+order by distance, e.created_at desc
+limit {limit} offset {offset}"""
             result = await session.execute(text(query))
             return result.mappings().all() 
         

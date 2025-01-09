@@ -1,10 +1,10 @@
-import { useLocation } from "react-router-dom";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../styles/VerifyRecoveryPasswordCode.css"
 
 const VerifyRecoveryPasswordCode = () => {
+    const API_URL = process.env.REACT_APP_API_URL;   
     const navigate = useNavigate();
     const location = useLocation();
     const email = location.state?.email;
@@ -15,7 +15,7 @@ const VerifyRecoveryPasswordCode = () => {
         const code = codeData
 
         try {
-            const response = await axios.post(`http://localhost:8000/organizations/verify_singlemode_code_from_mail?email=${email}&code=${code}`);
+            const response = await axios.post(`${API_URL}/organizations/verify_singlemode_code_from_mail?email=${email}&code=${code}`);
             if (response.data === false) {
                 alert("Неверный код")
             }

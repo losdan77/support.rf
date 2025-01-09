@@ -39,11 +39,19 @@ async def add_event(event_data: SAddEvent):
     return 'ok'
 
 
+@router.get('/get_event_count')
+async def get_event_count(need_help: bool, text: str = ''):
+    count = await EventDAO.get_event_count_by_filter(need_help=need_help,
+                                                     text_search=text)
+    return count
+
+
 @router.get('/get_all_event')
-@cache(expire=60)
-async def get_all_event(need_help: bool):
+async def get_all_event(need_help: bool, limit: int = 10, page: int = 1):
     latitude = None
     longitude = None
+
+    offset = (page - 1) * limit
     
     try:
         current_organization = get_current_user
@@ -54,23 +62,38 @@ async def get_all_event(need_help: bool):
         pass
 
     if not latitude and not longitude:
-        all_event = await EventDAO.find_all(need_help = need_help)
+        all_event = await EventDAO.find_all(need_help = need_help,
+                                            offset = offset,
+                                            limit = limit)
     else:
         all_event = await EventDAO.find_all_with_distance(need_help = need_help,
                                             latitude = latitude,
-                                            longitude = longitude)
+                                            longitude = longitude,
+                                            offset = offset,
+                                            limit = limit)
     return all_event
+
+
+@router.get('/get_count_event_by_id_organization')
+@cache(expire=60)
+async def get_count_event_by_id_organization(id_organization: int):
+    count = await EventDAO.get_event_count_by_id_organization(id_organization=id_organization)
+    return count
 
 
 @router.get('/get_event_by_id_organization')
 @cache(expire=60)
-async def get_event_by_id_organization(id_organization: int):
-    events = await EventDAO.find_event_by_id_organization(id_organization = id_organization)
+async def get_event_by_id_organization(id_organization: int,
+                                       limit: int = 10,
+                                       page: int = 1):
+    offset = (page - 1) * limit
+    events = await EventDAO.find_event_by_id_organization(id_organization = id_organization,
+                                                          limit = limit,
+                                                          offset = offset)
     return events
 
 
 @router.get('/get_event_by_id')
-@cache(expire=60)
 async def get_event_by_id(id_event: int):
     event = await EventDAO.find_event_by_id(id = id_event)
     return event
@@ -78,7 +101,8 @@ async def get_event_by_id(id_event: int):
 
 @router.delete('/delete_event_by_id')
 async def delete_event_by_id(id_event: int,
-                             current_organization: Organization = Depends(get_current_user)):
+                             access_token: str):
+    current_organization = await get_current_user(access_token)
     organization = await EventDAO.find_by_id(id_event)
 
     if organization['id_organization'] != current_organization['id']:
@@ -103,6 +127,7 @@ async def all_type_event():
 
 
 @router.get('/all_type_event_by_theme')
+@cache(expire=60)
 async def all_type_event_by_theme(id_theme_event: int):
     all_type_by_theme = await TypeEventDAO.find_all(id_theme_event=id_theme_event)
     return all_type_by_theme
@@ -114,6 +139,7 @@ async def add_theme_event(theme_event: str):
 
 
 @router.get('/all_theme_event')
+@cache(expire=60)
 async def all_theme_event():
     all_theme = await ThemeEventDAO.find_all()
     return all_theme
@@ -122,9 +148,13 @@ async def all_theme_event():
 @router.get('/find_event_by_text_or_short_text')
 async def find_event_by_text_or_short_text(need_help: bool,
                                            access_token: str | None = None,
-                                           text: Optional[str] = '',):
+                                           text: Optional[str] = '',
+                                           page: int = 1,
+                                           limit: int = 10):
     latitude = None
     longitude = None
+
+    offset = (page - 1) * limit
 
     if access_token:
         current_organization = await get_current_user(access_token)
@@ -133,24 +163,32 @@ async def find_event_by_text_or_short_text(need_help: bool,
         longitude = organization['longitude']
 
     if not latitude and not longitude:
-        events = await EventDAO.find_by_text_or_short_text(need_help, text)
+        events = await EventDAO.find_by_text_or_short_text(need_help=need_help, 
+                                                        text_search=text,
+                                                        limit=limit,
+                                                        offset=offset)
     else:
-        events = await EventDAO.find_by_text_or_short_text_with_distance(need_help, 
-                                                                         text,
-                                                                         latitude,
-                                                                         longitude)
+        events = await EventDAO.find_by_text_or_short_text_with_distance(need_help=need_help, 
+                                                                        text_search=text,
+                                                                        latitude=latitude,
+                                                                        longitude=longitude,
+                                                                        limit=limit,
+                                                                        offset=offset)
+    
     return events
 
 
 @router.post('/send_help_message_on_email')
 async def send_help_message_on_email(email: EmailStr,
                                      short_text: str,
-                                     current_organization: Organization = Depends(get_current_user)):
+                                     access_token: str):
+    current_organization = await get_current_user(access_token)
     organization = await OrganizationDAO.find_by_id(current_organization['id'])
     
     short_text = short_text
 
     email = email
+    email_from = organization['email']
     
     if organization['phone_1']:
         phone_1 = organization['phone_1']
@@ -163,6 +201,7 @@ async def send_help_message_on_email(email: EmailStr,
         phone_2 = ''
 
     send_help_email.delay(email,
+                          email_from,
                           phone_1,
                           phone_2,
                           short_text)

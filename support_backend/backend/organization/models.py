@@ -32,10 +32,6 @@ class Organization(Base):
     event: Mapped[list['Event']] = relationship(back_populates='organization')
     from_comment: Mapped[list['Comment']] = relationship(back_populates='from_organization', cascade='all,delete')
     for_comment: Mapped[list['Comment']] = relationship(back_populates='for_organization', cascade='all,delete')
- 
-    __table_args__ = (
-        Index('email_index', 'email'),
-    )
 
     def __str__(self):
         return f'{self.email}'

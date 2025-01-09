@@ -1,10 +1,10 @@
-import { useLocation } from "react-router-dom";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "../styles/CreateNewPassword.css"
 
 const CreateNewPassword = () => {
+    const API_URL = process.env.REACT_APP_API_URL; 
     const navigate = useNavigate();
     const location = useLocation();
     const email = location.state?.email;
@@ -17,7 +17,7 @@ const CreateNewPassword = () => {
         e.preventDefault()
 
         try {
-            const response = await axios.post("http://localhost:8000/organizations/create_new_password",
+            const response = await axios.post(`${API_URL}/organizations/create_new_password`,
                 {
                     email,
                     new_password: formData.new_password,
