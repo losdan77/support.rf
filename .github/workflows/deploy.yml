@@ -30,7 +30,6 @@ jobs:
       run: |
         echo "${{ secrets.SSH_KEY_PASSPHRASE }}" | ssh-add -
 
-
     # 3. Проверка Docker Compose
     - name: Lint Docker Compose
       run: docker-compose -f docker-compose.yml config
